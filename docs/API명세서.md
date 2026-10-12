@@ -5,7 +5,7 @@
 | 항목 | 내용 |
 | --- | --- |
 | 문서명 | 한채 API 명세서 |
-| 버전 | 0.1 (초안) |
+| 버전 | 0.2 (초안) |
 | 작성자 | Minju |
 | 작성일 | 2026-10-08 |
 | 기준 문서 | `docs/기능명세서.md` v0.10, Crowfoot ERD 「한채 블로그 플랫폼」(v45), 한채 와이어프레임 |
@@ -16,6 +16,7 @@
 | 버전 | 날짜 | 작성자 | 변경 내용 |
 | --- | --- | --- | --- |
 | 0.1 | 2026-10-08 | Minju | 최초 작성. 공통 규칙, 데이터 모양, 영역별 API, 화면별 API 표 |
+| 0.2 | 2026-10-12 | Minju | AUTH · BLOG API, 이미지 올리기, 골목 목록 구현에 맞춰 보완 (7.1, 7.2, 7.3) |
 
 ---
 
@@ -556,6 +557,9 @@ SCR-04(마을 소식판), SCR-16(댓글 · 방명록 관리)은 2차 화면이�
 | 목록 나누기 | 한채 안은 페이지, 마을의 쌓이는 목록은 커서 | 통합 명세 4.4 (한채 목록 10개 페이지, 더보기 목록은 중복 · 누락 없이) |
 | API 주소 | 서비스 주소 한 곳(`한채도메인/api`) | 서브도메인마다 API를 두지 않아 CORS · 쿠키 설정이 한 번으로 끝난다 |
 | 백엔드 | Django + Django REST Framework + django-allauth (기능명세서 1.5, 0.11) | 기준 ERD가 Django 구조다 |
+| 한채 주소 예약어 | `www` `api` `admin` `django-admin` `login` `logout` `signup` `accounts` `account` `static` `media` `mail` `email` `help` `about` `search` `topic` `topics` `ranking` `me` `new` `build` `manage` `blog` `blogs` `hanchae` `root` `support` `dev` `test` `village` `notice` `terms` `privacy` `address-available` (`backend/apps/blogs/serializers.py`) | 서비스 주소 · API 경로와 겹치지 않게 |
+| 메일 인증 전 로그인 | 이메일 주소 기록이 있는데 인증된 것이 하나도 없으면 `403 EMAIL_NOT_VERIFIED`. 운영자가 명령으로 만든 계정(이메일 기록 없음)은 바로 로그인된다 | 운영자 계정을 메일 없이 만들 수 있게 |
+| 이미지 저장 | 원본은 다시 저장하면서 위치 정보 등 메타데이터를 지운다(GIF 는 움직임을 지키려고 원본 그대로). 작은 이미지는 가로 480px WebP | 개인정보 보호, 목록 속도 |
 
 ### 7.2 남은 것
 
@@ -563,7 +567,18 @@ SCR-04(마을 소식판), SCR-16(댓글 · 방명록 관리)은 2차 화면이�
 | --- | --- |
 | 서비스 도메인 | 미정. 정해지면 쿠키 도메인 · CORS 허용 출처에 넣는다 |
 | 본문 HTML 허용 태그 | 정제할 때 남길 태그 · 속성 목록(문단, 제목, 굵게, 목록, 인용, 코드, 링크, 이미지)을 구현 때 확정 |
-| 예약어 목록 | 한채 주소로 못 쓰는 단어(`www` `api` `admin` `login` `static` `mail` …)를 구현 때 확정 |
+| 인증 메일의 링크 | 지금은 백엔드 주소(`/accounts/confirm-email/{key}/`)로 간다. 프론트 화면이 생기면 메일 링크를 프론트의 인증 화면으로 바꾸고, 그 화면이 `POST /api/auth/email/verify`를 부른다 |
+| 이용 제한 중 로그인 상태 | 로그인한 뒤에 제한된 회원은 다음 행동부터 막아야 한다(ADMIN-02, 2차). 지금은 로그인할 때만 막는다 |
+
+### 7.3 구현 현황
+
+| 영역 | 상태 |
+| --- | --- |
+| 공통 (오류 형식, 권한, CSRF, 볼 수 있는 기록 · 한채 판단) | 완료 |
+| AUTH (소셜 로그인 설정 제외) | 완료. 소셜은 제공사 앱 키를 받은 뒤 Django 운영 화면의 Social applications 에 등록 |
+| BLOG | 완료 |
+| POST | 이미지 올리기, 골목 목록 완료. 기록 목록 · 상세 · 발행 · 수정 · 삭제 · 조회는 다음 |
+| CAT · TAG · CMT · SOC · SUB · SRCH · HOME | 다음 |
 
 ---
 

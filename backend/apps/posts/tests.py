@@ -5,7 +5,7 @@ from django.utils import timezone
 from apps.accounts.models import User
 from apps.blogs.models import Blog
 
-from .models import Category, Post, Tag, Topic
+from .models import Category, Image, Post, Tag, Topic
 
 
 class PostsTestBase(TestCase):
@@ -93,3 +93,73 @@ class PostRuleTests(PostsTestBase):
         self.publish(self.blog, 1, client_token="6f1c2b9e-0d7a-4c55-9a77-1f2e3d4c5b6a")
         with self.assertRaises(IntegrityError), transaction.atomic():
             self.publish(self.blog, 2, client_token="6f1c2b9e-0d7a-4c55-9a77-1f2e3d4c5b6a")
+
+
+import io  # noqa: E402
+import shutil  # noqa: E402
+import tempfile  # noqa: E402
+
+from django.core.files.uploadedfile import SimpleUploadedFile  # noqa: E402
+from django.test import override_settings  # noqa: E402
+from PIL import Image as PILImage  # noqa: E402
+from rest_framework.test import APITestCase  # noqa: E402
+
+from apps.accounts.tests import make_member  # noqa: E402
+
+TEMP_MEDIA = tempfile.mkdtemp(prefix="hanchae-test-media-")
+
+
+def png_bytes(width=1200, height=800):
+    buffer = io.BytesIO()
+    PILImage.new("RGB", (width, height), (59, 69, 82)).save(buffer, format="PNG")
+    return buffer.getvalue()
+
+
+@override_settings(MEDIA_ROOT=TEMP_MEDIA)
+class ImageUploadTests(APITestCase):
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(TEMP_MEDIA, ignore_errors=True)
+        super().tearDownClass()
+
+    def setUp(self):
+        self.user = make_member()
+        self.client.force_authenticate(self.user)
+
+    def upload(self, data, name="photo.png", content_type="image/png"):
+        return self.client.post("/api/images", {"file": SimpleUploadedFile(name, data, content_type)}, format="multipart")
+
+    def test_upload_makes_thumbnail(self):
+        res = self.upload(png_bytes())
+        self.assertEqual(res.status_code, 201)
+        body = res.json()
+        self.assertEqual((body["width"], body["height"]), (1200, 800))
+        self.assertTrue(body["thumb_url"].endswith(".webp"))
+        image = Image.objects.get(pk=body["id"])
+        with PILImage.open(image.thumb_file.path) as thumb:
+            self.assertEqual(thumb.width, 480)
+
+    def test_fake_image_is_rejected(self):
+        res = self.upload(b"this is not an image", name="evil.png")
+        self.assertEqual(res.status_code, 415)
+        self.assertEqual(res.json()["error"]["code"], "UNSUPPORTED_FILE")
+
+    @override_settings(MAX_IMAGE_BYTES=100)
+    def test_too_large(self):
+        res = self.upload(png_bytes())
+        self.assertEqual(res.status_code, 413)
+
+    def test_profile_image_from_upload(self):
+        image_id = self.upload(png_bytes(64, 64)).json()["id"]
+        res = self.client.patch("/api/me", {"profile_image_id": image_id}, format="json")
+        self.assertEqual(res.status_code, 200)
+        self.assertIsNotNone(res.json()["user"]["profile_image_url"])
+        other = make_member("seohyun@example.com", "서현")
+        self.client.force_authenticate(other)
+        res = self.client.patch("/api/me", {"profile_image_id": image_id}, format="json")
+        self.assertEqual(res.status_code, 400)  # 남이 올린 이미지는 쓸 수 없다
+
+    def test_topics(self):
+        res = self.client.get("/api/topics")
+        self.assertEqual(len(res.json()), 10)
+        self.assertEqual(res.json()[2], {"slug": "it", "name": "IT·개발"})
