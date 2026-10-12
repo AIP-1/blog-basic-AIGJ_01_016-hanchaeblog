@@ -1,0 +1,82 @@
+# 한채 백엔드 배포 (서버 배포 설명서 4단계)
+# main 에 backend/ 나 배포 파일이 바뀌어 올라오면 Docker 이미지를 만들어 서버로 보내고, SSH 로 접속해 실행한다.
+# 필요한 값은 모두 GitHub 저장소 Settings → Secrets and variables → Actions → Repository secrets 에 넣는다 (deploy/README.md).
+name: deploy
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "backend/**"
+      - "deploy/**"
+      - ".github/workflows/deploy.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Docker 이미지 만들기
+        run: docker build -t hanchae-backend:latest backend
+
+      - name: 이미지를 파일로 저장
+        run: |
+          mkdir -p bundle
+          docker save hanchae-backend:latest | gzip > bundle/hanchae-backend.tar.gz
+          cp deploy/deploy.sh bundle/deploy.sh
+
+      - name: 서버에서 쓸 환경 변수 파일 만들기
+        env:
+          DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+          HANCHAE_DOMAIN: ${{ secrets.HANCHAE_DOMAIN }}
+          USE_HTTPS: ${{ secrets.USE_HTTPS }}
+          APP_PORT: ${{ secrets.APP_PORT }}
+          DB_ADDRESS: ${{ secrets.DB_ADDRESS }}
+          DB_PORT: ${{ secrets.DB_PORT }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        run: |
+          {
+            printf 'DJANGO_SECRET_KEY=%s\n' "$DJANGO_SECRET_KEY"
+            printf 'DJANGO_DEBUG=0\n'
+            printf 'HANCHAE_DOMAIN=%s\n' "$HANCHAE_DOMAIN"
+            printf 'USE_HTTPS=%s\n' "${USE_HTTPS:-0}"
+            printf 'APP_PORT=%s\n' "$APP_PORT"
+            printf 'DB_ADDRESS=%s\n' "$DB_ADDRESS"
+            printf 'DB_PORT=%s\n' "$DB_PORT"
+            printf 'DB_NAME=%s\n' "$DB_NAME"
+            printf 'DB_USER=%s\n' "$DB_USER"
+            printf 'DB_PASSWORD=%s\n' "$DB_PASSWORD"
+            printf 'SERVE_MEDIA=1\n'
+            printf 'MEDIA_ROOT=/app/media\n'
+          } > bundle/hanchae.env
+          for name in DJANGO_SECRET_KEY HANCHAE_DOMAIN APP_PORT DB_ADDRESS DB_PORT DB_NAME DB_USER DB_PASSWORD; do
+            if [ -z "${!name}" ]; then echo "::error::Repository secret $name 이 비어 있어요"; exit 1; fi
+          done
+
+      - name: 서버로 보내기
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_ADDRESS }}
+          username: ${{ secrets.SSH_ID }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          port: ${{ secrets.SSH_PORT }}
+          source: "bundle/*"
+          target: "~/hanchae"
+          strip_components: 1
+
+      - name: 서버에서 실행하기
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_ADDRESS }}
+          username: ${{ secrets.SSH_ID }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          port: ${{ secrets.SSH_PORT }}
+          script: bash ~/hanchae/deploy.sh

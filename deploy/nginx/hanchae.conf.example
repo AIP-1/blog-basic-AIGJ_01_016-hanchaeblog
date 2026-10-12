@@ -1,0 +1,19 @@
+# 한채 nginx 설정 예시 (서버 배포 설명서 5단계)
+# 설명서대로 공용 문서의 server { ... } 를 복사해 쓰되, 아래 표시한 줄이 들어 있는지 확인한다.
+server {
+    listen 80;
+    # 받은 도메인으로 바꾼다. 한채마다 서브도메인을 쓸 수 있으면(와일드카드 DNS) 두 번째 이름도 넣는다.
+    server_name <받은-도메인>;            # 예: hanchae.java21.net
+    # server_name <받은-도메인> *.<받은-도메인>;
+
+    # 이미지 업로드 상한 10MB 보다 조금 넉넉하게. 없으면 nginx 기본값(1MB) 때문에 사진이 413 으로 막힌다.
+    client_max_body_size 12m;
+
+    location / {
+        proxy_pass http://127.0.0.1:<내-포트>;   # 설명서의 8300 자리. GitHub Secrets 의 APP_PORT 와 같은 값
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
