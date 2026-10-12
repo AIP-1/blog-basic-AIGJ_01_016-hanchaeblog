@@ -5,8 +5,8 @@
 
 | 파일 | 하는 일 |
 | --- | --- |
-| `backend/Dockerfile` | Django + gunicorn 이미지. 컨테이너가 뜰 때 `migrate` 를 먼저 돌린다 |
-| `.github/workflows/deploy.yml` | main 에 `backend/` · `deploy/` 가 바뀌면 자동 배포. Actions 탭에서 손으로도 돌릴 수 있다 |
+| `Dockerfile` · `.dockerignore` | Django + gunicorn 이미지. API 와 화면 파일(`*.html` · `css` · `js` · `assets`)을 함께 담는다. 컨테이너가 뜰 때 `migrate` 를 먼저 돌린다 |
+| `.github/workflows/deploy.yml` | main 에 백엔드 · 화면 · 배포 파일이 바뀌면 자동 배포. Actions 탭에서 손으로도 돌릴 수 있다 |
 | `deploy/deploy.sh` | 서버에서 실행: 이미지 불러오기 → 예전 컨테이너 내리기 → 새 컨테이너 띄우기 → 응답 확인 |
 | `deploy/nginx/hanchae.conf.example` | nginx 설정 예시 |
 
@@ -30,6 +30,8 @@
 | `HANCHAE_DOMAIN` | 받은 도메인 (예: `hanchae.java21.net`, `https://` 없이) | 〃 |
 | `DJANGO_SECRET_KEY` | 긴 무작위 문자열. 아래 명령으로 만든다 | 직접 |
 | `USE_HTTPS` | 도메인이 https 로 열리면 `1`, 아니면 비워 둔다 | 직접 |
+| `EMAIL_HOST_USER` | 인증 메일을 보낼 한채 전용 Gmail 주소 (예: `hanchae.blog@gmail.com`) | 직접 |
+| `EMAIL_HOST_PASSWORD` | 그 Gmail 의 **앱 비밀번호** 16자리 (계정 비밀번호가 아님). Google 계정 → 보안 → 2단계 인증을 켠 뒤 '앱 비밀번호'에서 만든다 | 직접 |
 
 ```bash
 python3 -c "import secrets; print(secrets.token_urlsafe(50))"   # DJANGO_SECRET_KEY 값
@@ -50,6 +52,7 @@ nginx 설정은 설명서대로 공용 문서의 `server { ... }` 를 복사해 
 1. 이 브랜치를 main 에 합치면 Actions 가 자동으로 돈다. (또는 Actions 탭 → deploy → Run workflow)
 2. 실패하면 Actions 로그나 GitHub inbox 의 오류를 그대로 Claude 에게 보여 주고 고친다. 비밀 값은 지우고 보여 준다.
 3. 성공하면 확인:
+   - `http://<받은-도메인>/` → 마을 화면
    - `http://<받은-도메인>/api/topics` → 골목 10개
    - `http://<받은-도메인>/api/auth/me` → `{"user": null}`
 4. 운영자 계정은 서버에서 한 번 만든다.
@@ -59,6 +62,9 @@ docker exec -it hanchae-backend python manage.py createsuperuser
 ```
 
 ## 알아 둘 것
+
+- **업데이트**: 작업 브랜치 → PR → main 에 합치면 위 흐름이 다시 돈다. 백엔드(`backend/`)뿐 아니라 화면(`*.html` · `css/` · `js/` · `assets/`)만 바꿔도 배포된다.
+- **노트북에서 이미지 확인**: 저장소 루트에서 `docker build -t hanchae-backend .` 후 `docker run --rm -p 8000:8000 --env-file backend/.env -e DB_HOST=host.docker.internal hanchae-backend`
 
 - **테이블은 Django 가 만든다.** 컨테이너가 뜰 때마다 `migrate` 가 돈다. Crowfoot 화면의 "배포"로 테이블을 따로 만들지 않는다(두 곳에서 만들면 어긋난다).
 - **올린 사진**은 서버의 `~/hanchae/media` 에 남는다. 컨테이너를 새로 띄워도 지워지지 않는다.

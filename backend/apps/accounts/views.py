@@ -1,5 +1,8 @@
 """회원 · 로그인 API (API 명세서 4.1, 기능 AUTH-01 ~ AUTH-05)."""
 
+import logging
+import smtplib
+
 from allauth.account.models import EmailAddress, EmailConfirmationHMAC
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError, transaction
@@ -17,6 +20,8 @@ from apps.posts.images import get_own_image
 
 from .models import User
 from .serializers import LoginSerializer, MeUpdateSerializer, NicknameField, SignupSerializer, me_payload
+
+logger = logging.getLogger(__name__)
 
 
 @method_decorator(ensure_csrf_cookie, name="get")
@@ -63,9 +68,13 @@ class SignupView(EnforceCsrfMixin, APIView):
                     privacy_agreed_at=now,
                 )
                 address = EmailAddress.objects.create(user=user, email=user.email, primary=True, verified=False)
+                # 메일을 못 보내면 가입도 되돌린다. 남겨 두면 메일 없이 '이미 가입한 이메일'만 남는다
+                address.send_confirmation(request, signup=True)
         except IntegrityError:
             raise APIError(409, "CONFLICT", "이미 쓰고 있는 값이 있어요.")
-        address.send_confirmation(request, signup=True)
+        except (smtplib.SMTPException, OSError):
+            logger.exception("인증 메일을 보내지 못했어요")
+            raise APIError(503, "MAIL_FAILED", "인증 메일을 보내지 못했어요. 잠시 뒤 다시 가입해 주세요.")
         return Response({"email_verification_sent": True}, status=status.HTTP_201_CREATED)
 
 

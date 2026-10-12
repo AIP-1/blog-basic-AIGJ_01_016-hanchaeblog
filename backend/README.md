@@ -35,6 +35,9 @@ DB_PASSWORD=<2에서 정한 비밀번호>
 DB_HOST=127.0.0.1
 DB_PORT=3306
 # HANCHAE_DOMAIN=hanchae.kr   ← 서비스 도메인이 정해지면
+# 인증 메일을 실제로 보내려면 (없으면 메일이 터미널에 찍힌다)
+# EMAIL_HOST_USER=hanchae.blog@gmail.com
+# EMAIL_HOST_PASSWORD=<Gmail 앱 비밀번호 16자리>
 ```
 
 5. 테이블을 만든다: `python manage.py migrate` (골목 10개도 함께 들어간다)

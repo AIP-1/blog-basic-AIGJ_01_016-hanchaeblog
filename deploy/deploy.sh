@@ -30,10 +30,11 @@ docker run -d \
   -v "$APP_DIR/media:/app/media" \
   hanchae-backend:latest
 
-echo "[4/4] 뜨는지 확인"
+echo "[4/4] 뜨는지 확인 (API 와 첫 화면)"
 for i in $(seq 1 30); do
-  if curl -fsS "http://127.0.0.1:$APP_PORT/api/topics" >/dev/null 2>&1; then
-    echo "배포 완료: http://127.0.0.1:$APP_PORT/api/topics 응답 확인"
+  if curl -fsS "http://127.0.0.1:$APP_PORT/api/topics" >/dev/null 2>&1 \
+    && curl -fsS "http://127.0.0.1:$APP_PORT/" >/dev/null 2>&1; then
+    echo "배포 완료: /api/topics 와 / 응답 확인"
     docker image prune -f >/dev/null 2>&1 || true
     rm -f hanchae-backend.tar.gz
     exit 0

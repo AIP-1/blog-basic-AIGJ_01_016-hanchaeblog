@@ -1,1 +1,1 @@
-{% autoescape off %}한채 이메일 인증을 마쳐 주세요{% endautoescape %}
+{% autoescape off %}이메일 인증을 마쳐 주세요{% endautoescape %}

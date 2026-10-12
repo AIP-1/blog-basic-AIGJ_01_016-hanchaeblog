@@ -144,8 +144,20 @@ ACCOUNT_ADAPTER = "apps.accounts.adapter.AccountAdapter"
 # 같은 이메일 중복은 users.email 유일 제약과 ACCOUNT_UNIQUE_EMAIL 이 대신 막는다.
 SILENCED_SYSTEM_CHECKS = ["models.W036"]
 
-# 개발 중에는 인증 메일을 터미널에 찍는다
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+# 인증 메일 보내기. 한채 전용 Gmail 계정과 앱 비밀번호가 있으면 Gmail 로 보내고,
+# 없으면(개발 중) 메일을 터미널에 찍는다. 받는 주소는 가입자가 적은 어떤 메일이든 된다.
+EMAIL_HOST_USER = env("EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", "")
+if EMAIL_HOST_USER and EMAIL_HOST_PASSWORD:
+    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+    EMAIL_HOST = env("EMAIL_HOST", "smtp.gmail.com")
+    EMAIL_PORT = int(env("EMAIL_PORT", "587"))
+    EMAIL_USE_TLS = True
+    EMAIL_TIMEOUT = 15
+else:
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+DEFAULT_FROM_EMAIL = f"한채 <{EMAIL_HOST_USER or 'noreply@localhost'}>"
+ACCOUNT_EMAIL_SUBJECT_PREFIX = "[한채] "
 
 
 # 로그인 유지: 마지막 사용 기준 2주 (기능명세서 9.2)
