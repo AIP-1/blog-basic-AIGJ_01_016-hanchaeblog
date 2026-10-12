@@ -25,5 +25,6 @@ COPY assets/ frontend/assets/
 RUN DJANGO_SECRET_KEY=collectstatic-only python manage.py collectstatic --noinput
 
 EXPOSE 8000
-# 컨테이너가 뜰 때마다 DB 를 최신 마이그레이션으로 맞춘 뒤 서버를 켠다
-CMD ["sh", "-c", "python manage.py migrate --noinput && gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 3 --access-logfile - --error-logfile -"]
+# 컨테이너가 뜰 때마다 DB 를 최신 마이그레이션으로 맞춘 뒤 서버를 켠다.
+# 포트는 PORT 로 바꿀 수 있다 (학교 서버는 호스트 네트워크로 띄워 APP_PORT 에서 바로 받는다)
+CMD ["sh", "-c", "python manage.py migrate --noinput && gunicorn config.wsgi:application --bind 0.0.0.0:${PORT:-8000} --workers 3 --access-logfile - --error-logfile -"]

@@ -20,7 +20,7 @@
 | `DB_ADDRESS` | DB 주소에서 뒤의 `:숫자` 를 뺀 부분 | Crowfoot → 데이터베이스 탭 → MySQL #1 (스키마 `cf_u37_d1`) |
 | `DB_PORT` | 주소 뒤의 숫자 | 〃 |
 | `DB_NAME` | 데이터베이스(스키마) 이름 | 〃 |
-| `DB_USER` | 계정 | 〃 (설명서 표의 두 번째 `DB_NAME` 칸) |
+| `DB_USER` (또는 설명서의 `DB_USERNAME`) | 계정 | 〃 (설명서 표의 두 번째 `DB_NAME` 칸) |
 | `DB_PASSWORD` | 비밀번호 | 〃 |
 | `SSH_ADDRESS` | 서버 주소 (내부망 / 외부 핫스팟) | aip 프로젝트 공통 인프라 문서 |
 | `SSH_ID` | 내 계정 | 〃 |
@@ -39,13 +39,31 @@ python3 -c "import secrets; print(secrets.token_urlsafe(50))"   # DJANGO_SECRET_
 
 ## 2. 서버 준비 (설명서 3 · 5단계)
 
+`SSH_ADDRESS` 는 접속하는 곳에 따라 다르다. 학교 와이파이(chosun_free 제외)에서는 내부망 주소, 핫스팟 · 집에서는 외부 주소 `s2.java21.net`. **GitHub Actions 는 학교 밖에서 접속하므로 Secret 에는 외부 주소를 넣는다.**
+
 ```bash
 ssh -p 8822 <SSH_ID>@<SSH_ADDRESS>     # 처음 물으면 yes
 docker --version                        # Docker 가 있는지 확인
 mkdir -p ~/hanchae                      # 배포 파일이 놓일 곳
 ```
 
-nginx 설정은 설명서대로 공용 문서의 `server { ... }` 를 복사해 `~/nginx/<받은-도메인>.conf` 로 만들고, 두 군데(`server_name`, `proxy_pass` 의 포트)를 바꾼다. 그리고 **`client_max_body_size 12m;` 한 줄을 꼭 더한다.** 없으면 nginx 기본값(1MB) 때문에 사진 업로드가 막힌다. `deploy/nginx/hanchae.conf.example` 을 참고한다.
+### nginx 설정 (설명서 5단계) — 서버의 공용 nginx 가 각자의 `~/nginx/*.conf` 를 읽어 도메인을 내 포트로 연결한다
+
+```bash
+mkdir -p ~/nginx
+vi ~/nginx/hanchae.java21.net.conf      # 파일 이름 = 받은 도메인 + .conf
+```
+
+1. `i` 로 입력 모드에 들어가, **aip 프로젝트 문서에 있는 공용 설정의 `server { ... }` 를 그대로 붙여 넣는다.** (설정 원본은 그 문서에만 있다. 다른 사람 것을 따라 쓰지 않는다)
+2. 두 군데를 바꾼다.
+   - 3번째 줄 `server_name` → `hanchae.java21.net`
+   - `proxy_pass` 의 `8300` → **GitHub Secrets 의 `APP_PORT` 와 같은 번호** (설명서: 자기 포트번호 맨 처음)
+3. `server { ... }` 안에 **`client_max_body_size 12m;` 한 줄을 더한다.** 없으면 nginx 기본값(1MB) 때문에 사진 업로드가 막힌다.
+4. `esc` → `:wq` 로 저장하고, `cat ~/nginx/hanchae.java21.net.conf` 로 바꾼 곳을 확인한다.
+
+공용 nginx 가 모든 학생의 설정을 함께 읽으므로, 괄호 · 세미콜론이 빠진 설정은 다른 사람 사이트까지 멈추게 할 수 있다. 붙여 넣은 뒤 꼭 다시 확인한다. 참고 예시: `deploy/nginx/hanchae.conf.example`
+
+컨테이너는 서버의 네트워크를 그대로 쓰는 방식(`--network host`)으로 떠서 `APP_PORT` 에서 바로 요청을 받는다. 학교 서버에서는 Docker 기본 네트워크에서 학교 내부망의 DB 로 가는 길이 막혀 있기 때문이다.
 
 ## 3. 첫 배포
 
