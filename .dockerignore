@@ -1,0 +1,16 @@
+# 이미지에 넣을 것만 고른다 (나머지는 모두 뺀다: .git, docs, deploy, 비밀 값 …)
+*
+!backend/
+!*.html
+!css/
+!js/
+!assets/
+
+# backend 안에서도 뺄 것
+backend/.venv/
+backend/.env
+backend/media/
+backend/staticfiles/
+**/__pycache__/
+**/*.pyc
+**/.DS_Store

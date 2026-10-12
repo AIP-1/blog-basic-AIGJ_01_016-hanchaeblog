@@ -143,3 +143,33 @@ class NicknameAndMeTests(APITestCase):
         res = self.client.patch("/api/me", {"nickname": "서현"}, format="json")
         self.assertEqual(res.status_code, 400)
         self.assertIn("nickname", res.json()["error"]["fields"])
+
+
+class FailingMailBackend:
+    """SMTP 서버에 닿지 못한 것처럼 실패하는 메일 백엔드 (테스트용)."""
+
+    def __init__(self, *args, **kwargs):
+        pass
+
+    def send_messages(self, messages):
+        import smtplib
+
+        raise smtplib.SMTPAuthenticationError(535, b"bad credentials")
+
+
+class SignupMailTests(APITestCase):
+    def test_mail_subject_and_sender(self):
+        self.client.post("/api/auth/signup", SIGNUP, format="json")
+        self.assertEqual(mail.outbox[0].subject, "[한채] 이메일 인증을 마쳐 주세요")
+        self.assertTrue(mail.outbox[0].from_email.startswith("한채 <"))
+
+    def test_signup_is_rolled_back_when_mail_fails(self):
+        """메일을 못 보내면 가입도 되돌려, 다시 가입할 수 있게 한다."""
+        from django.test import override_settings
+
+        with override_settings(EMAIL_BACKEND="apps.accounts.tests.FailingMailBackend"):
+            res = self.client.post("/api/auth/signup", SIGNUP, format="json")
+        self.assertEqual(res.status_code, 503)
+        self.assertEqual(res.json()["error"]["code"], "MAIL_FAILED")
+        self.assertFalse(User.objects.filter(email=SIGNUP["email"]).exists())
+        self.assertEqual(self.client.post("/api/auth/signup", SIGNUP, format="json").status_code, 201)

@@ -1,9 +1,11 @@
-# 한채 백엔드 이미지: Django + gunicorn
+# 한채 이미지: Django + gunicorn 이 API 와 화면 파일(index.html · css · js · assets)을 함께 내보낸다
+# 저장소 루트에서 빌드한다: docker build -t hanchae-backend .
 FROM python:3.12-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PIP_NO_CACHE_DIR=1
+    PIP_NO_CACHE_DIR=1 \
+    FRONTEND_DIR=/app/frontend
 
 # mysqlclient 를 빌드하려면 MySQL 클라이언트 라이브러리가 필요하다
 RUN apt-get update \
@@ -11,10 +13,15 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
-COPY requirements.txt .
+COPY backend/requirements.txt .
 RUN pip install -r requirements.txt
 
-COPY . .
+COPY backend/ .
+# 화면 파일. 어떤 파일이 들어오는지는 루트의 .dockerignore 가 정한다
+COPY *.html frontend/
+COPY css/ frontend/css/
+COPY js/ frontend/js/
+COPY assets/ frontend/assets/
 RUN DJANGO_SECRET_KEY=collectstatic-only python manage.py collectstatic --noinput
 
 EXPOSE 8000
