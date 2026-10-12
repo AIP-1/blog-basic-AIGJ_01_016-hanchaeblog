@@ -46,7 +46,8 @@ jobs:
           DB_ADDRESS: ${{ secrets.DB_ADDRESS }}
           DB_PORT: ${{ secrets.DB_PORT }}
           DB_NAME: ${{ secrets.DB_NAME }}
-          DB_USER: ${{ secrets.DB_USER }}
+          # 설명서는 DB_USERNAME, 처음 만든 이름은 DB_USER. 어느 쪽으로 넣어도 된다
+          DB_USER: ${{ secrets.DB_USER || secrets.DB_USERNAME }}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           EMAIL_HOST_USER: ${{ secrets.EMAIL_HOST_USER }}
           EMAIL_HOST_PASSWORD: ${{ secrets.EMAIL_HOST_PASSWORD }}

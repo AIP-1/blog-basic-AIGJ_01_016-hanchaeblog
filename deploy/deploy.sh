@@ -20,13 +20,17 @@ gunzip -c hanchae-backend.tar.gz | docker load
 echo "[2/4] 예전 컨테이너 내리기"
 docker rm -f "$NAME" >/dev/null 2>&1 || true
 
-echo "[3/4] 새 컨테이너 띄우기 (포트 $APP_PORT → 8000)"
+echo "[3/4] 새 컨테이너 띄우기 (포트 $APP_PORT)"
 mkdir -p "$APP_DIR/media"
+# 호스트 네트워크로 띄운다. 학교 서버에서는 Docker 기본 네트워크(bridge)에서
+# 학교 내부망의 DB(10.116.x)로 가는 길이 막혀 있다 (No route to host). 서버 자신은 DB 에 닿는다.
+# 그래서 -p 대신 컨테이너가 서버의 APP_PORT 에서 바로 받는다.
 docker run -d \
   --name "$NAME" \
   --restart unless-stopped \
+  --network host \
   --env-file "$APP_DIR/hanchae.env" \
-  -p "$APP_PORT:8000" \
+  -e PORT="$APP_PORT" \
   -v "$APP_DIR/media:/app/media" \
   hanchae-backend:latest
 
