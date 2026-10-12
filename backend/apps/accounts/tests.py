@@ -36,7 +36,8 @@ class SignupFlowTests(APITestCase):
         login = {"email": SIGNUP["email"], "password": SIGNUP["password"]}
         self.assertEqual(self.client.post("/api/auth/login", login, format="json").json()["error"]["code"], "EMAIL_NOT_VERIFIED")
 
-        key = re.search(r"confirm-email/([^/\s]+)/", mail.outbox[0].body).group(1)
+        # 메일의 링크는 프론트의 인증 화면으로 간다
+        key = re.search(r"/verify-email\?key=([^\s]+)", mail.outbox[0].body).group(1)
         self.assertEqual(self.client.post("/api/auth/email/verify", {"key": key}, format="json").status_code, 200)
 
         res = self.client.post("/api/auth/login", login, format="json")

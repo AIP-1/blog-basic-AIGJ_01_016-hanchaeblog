@@ -559,6 +559,10 @@ SCR-04(마을 소식판), SCR-16(댓글 · 방명록 관리)은 2차 화면이�
 | 백엔드 | Django + Django REST Framework + django-allauth (기능명세서 1.5, 0.11) | 기준 ERD가 Django 구조다 |
 | 한채 주소 예약어 | `www` `api` `admin` `django-admin` `login` `logout` `signup` `accounts` `account` `static` `media` `mail` `email` `help` `about` `search` `topic` `topics` `ranking` `me` `new` `build` `manage` `blog` `blogs` `hanchae` `root` `support` `dev` `test` `village` `notice` `terms` `privacy` `address-available` (`backend/apps/blogs/serializers.py`) | 서비스 주소 · API 경로와 겹치지 않게 |
 | 메일 인증 전 로그인 | 이메일 주소 기록이 있는데 인증된 것이 하나도 없으면 `403 EMAIL_NOT_VERIFIED`. 운영자가 명령으로 만든 계정(이메일 기록 없음)은 바로 로그인된다 | 운영자 계정을 메일 없이 만들 수 있게 |
+| 인증 메일의 링크 | 프론트의 인증 화면 `/verify-email?key=`으로 보낸다. 그 화면이 `POST /api/auth/email/verify`를 부른다 (`backend/apps/accounts/adapter.py`). 메일 문구는 `backend/templates/account/email/` | 메일 링크가 화면 흐름 안에 있게 |
+| 본문 HTML 허용 태그 | `p br div span h2 h3 strong b em i u s ul ol li blockquote pre code hr a img`. 속성은 `a[href]`, `img[src alt]`, 문단 · 글자의 `style` 중 `color` `background-color` `text-align`만. 사진은 우리 서버에 올린 것(`/media/...`)만 남긴다 (`backend/apps/posts/content.py`) | 스크립트 · 다른 사이트 사진으로 방문자 정보가 새는 것을 막는다 |
+| 글-이미지 연결 | 화면이 보낸 `image_ids` 대신 정제한 본문에 남은 사진(주인이 올린 것)으로 다시 잇는다 | 본문에서 지운 사진이 연결로 남지 않게 |
+| 기록 상세의 주인용 값 | 주인이 볼 때만 `cover_image_id`, `images`(`[{ id, url, thumb_url, width, height }]`)가 더 온다 | 고치기 화면이 대표 이미지를 다시 고르는 데 쓴다 |
 | 이미지 저장 | 원본은 다시 저장하면서 위치 정보 등 메타데이터를 지운다(GIF 는 움직임을 지키려고 원본 그대로). 작은 이미지는 가로 480px WebP | 개인정보 보호, 목록 속도 |
 
 ### 7.2 남은 것
@@ -566,8 +570,6 @@ SCR-04(마을 소식판), SCR-16(댓글 · 방명록 관리)은 2차 화면이�
 | 항목 | 내용 |
 | --- | --- |
 | 서비스 도메인 | 미정. 정해지면 쿠키 도메인 · CORS 허용 출처에 넣는다 |
-| 본문 HTML 허용 태그 | 정제할 때 남길 태그 · 속성 목록(문단, 제목, 굵게, 목록, 인용, 코드, 링크, 이미지)을 구현 때 확정 |
-| 인증 메일의 링크 | 지금은 백엔드 주소(`/accounts/confirm-email/{key}/`)로 간다. 프론트 화면이 생기면 메일 링크를 프론트의 인증 화면으로 바꾸고, 그 화면이 `POST /api/auth/email/verify`를 부른다 |
 | 이용 제한 중 로그인 상태 | 로그인한 뒤에 제한된 회원은 다음 행동부터 막아야 한다(ADMIN-02, 2차). 지금은 로그인할 때만 막는다 |
 
 ### 7.3 구현 현황
@@ -577,8 +579,13 @@ SCR-04(마을 소식판), SCR-16(댓글 · 방명록 관리)은 2차 화면이�
 | 공통 (오류 형식, 권한, CSRF, 볼 수 있는 기록 · 한채 판단) | 완료 |
 | AUTH (소셜 로그인 설정 제외) | 완료. 소셜은 제공사 앱 키를 받은 뒤 Django 운영 화면의 Social applications 에 등록 |
 | BLOG | 완료 |
-| POST | 이미지 올리기, 골목 목록 완료. 기록 목록 · 상세 · 발행 · 수정 · 삭제 · 조회는 다음 |
-| CAT · TAG · CMT · SOC · SUB · SRCH · HOME | 다음 |
+| POST | 완료 |
+| CAT · TAG | 방 목록 · 만들기, 태그 목록 완료. 방 이름 바꾸기 · 순서 · 없애기는 다음 |
+| CMT | 댓글 완료. 방명록은 다음 |
+| SOC | 완료 |
+| SUB | 맺기 · 끊기, 이웃 소식(`/api/me/feed`) 완료. `GET /api/me/subscriptions`는 다음 |
+| HOME | 새 기록, 골목의 기록 완료. 순위 두 개는 매 정각 계산하는 작업과 함께 다음 |
+| SRCH | 다음 |
 
 ---
 

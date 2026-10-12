@@ -1,104 +1,71 @@
 /**
- * 회원가입 · 로그인
- * 서버가 없으므로 회원 정보를 localStorage에 저장하는 연습용 로그인이다.
- * 비밀번호는 그대로 저장하지 않고 해시(SHA-256)로 바꿔서 저장한다.
- * 나중에 서버(Firebase Auth 등)로 바꿀 때는 이 파일만 고치면 된다.
+ * 회원가입 · 로그인 (API 명세서 4.1)
+ * 서버의 /api/auth/* 를 부른다. 로그인 상태는 Django 세션 쿠키로 유지된다.
+ *
+ * 로그인한 사용자: { nickname, email, profile_image_url, role, blog_address }
+ * blog_address 가 null 이면 아직 한채가 없는 회원이다.
  */
 const Auth = (function () {
-  const USERS_KEY = 'blog.users';
-  const SESSION_KEY = 'blog.session';
+  let mePromise = null;
 
-  function read(key, fallback) {
-    try {
-      const saved = localStorage.getItem(key);
-      return saved ? JSON.parse(saved) : fallback;
-    } catch (e) {
-      return fallback;
+  // 한 화면에서 여러 번 불러도 서버에는 한 번만 묻는다
+  function currentUser() {
+    if (!mePromise) {
+      mePromise = Api.get('/api/auth/me')
+        .then((data) => data.user)
+        .catch(() => null);
     }
+    return mePromise;
   }
 
-  function write(key, value) {
-    try {
-      localStorage.setItem(key, JSON.stringify(value));
-      return true;
-    } catch (e) {
-      return false;
-    }
-  }
-
-  function randomSalt() {
-    const bytes = crypto.getRandomValues(new Uint8Array(16));
-    return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
-  }
-
-  async function hashPassword(password, salt) {
-    if (!window.crypto || !crypto.subtle) {
-      throw new Error('이 환경에서는 비밀번호를 안전하게 처리할 수 없습니다. 파일을 직접 열거나 https 주소로 접속해 주세요.');
-    }
-    const data = new TextEncoder().encode(salt + password);
-    const hash = await crypto.subtle.digest('SHA-256', data);
-    return Array.from(new Uint8Array(hash), (b) => b.toString(16).padStart(2, '0')).join('');
-  }
-
-  function normalizeEmail(email) {
-    return String(email).trim().toLowerCase();
-  }
-
-  function startSession(user) {
-    write(SESSION_KEY, { email: user.email, nickname: user.nickname });
+  // 로그인 · 한채 짓기처럼 내 정보가 바뀐 뒤 다시 묻게 한다
+  function refresh() {
+    mePromise = null;
+    return currentUser();
   }
 
   /**
-   * 회원가입. 성공하면 바로 로그인 상태가 된다.
-   * 돌려주는 값: { ok: true } 또는 { ok: false, message: '...' }
+   * 회원가입. 가입하면 인증 메일이 가고, 인증해야 로그인할 수 있다.
+   * 돌려주는 값: { ok: true } 또는 { ok: false, message, fields }
    */
-  async function signUp({ nickname, email, password }) {
-    const users = read(USERS_KEY, []);
-    const normalized = normalizeEmail(email);
-
-    if (users.some((user) => user.email === normalized)) {
-      return { ok: false, message: '이미 가입된 이메일입니다.' };
+  async function signUp({ nickname, email, password, agreeTerms, agreePrivacy, over14 }) {
+    try {
+      await Api.post('/api/auth/signup', {
+        email: email.trim(),
+        password,
+        nickname: nickname.trim(),
+        agree_terms: agreeTerms,
+        agree_privacy: agreePrivacy,
+        over_14: over14,
+      });
+      return { ok: true };
+    } catch (err) {
+      return { ok: false, message: err.firstMessage || err.message, fields: err.fields };
     }
-
-    const salt = randomSalt();
-    const user = {
-      email: normalized,
-      nickname: nickname.trim(),
-      salt,
-      passwordHash: await hashPassword(password, salt),
-      createdAt: new Date().toISOString(),
-    };
-    users.push(user);
-
-    if (!write(USERS_KEY, users)) {
-      return { ok: false, message: '저장 공간이 부족해 가입하지 못했습니다.' };
-    }
-    startSession(user);
-    return { ok: true };
   }
 
   async function logIn(email, password) {
-    const user = read(USERS_KEY, []).find((u) => u.email === normalizeEmail(email));
-    // 이메일이 없는지 비밀번호가 틀린지 구분해서 알려 주지 않는다 (가입 여부를 숨기기 위해)
-    if (!user || (await hashPassword(password, user.salt)) !== user.passwordHash) {
-      return { ok: false, message: '이메일 또는 비밀번호가 맞지 않습니다.' };
-    }
-    startSession(user);
-    return { ok: true };
-  }
-
-  function logOut() {
     try {
-      localStorage.removeItem(SESSION_KEY);
-    } catch (e) {
-      // 무시
+      const data = await Api.post('/api/auth/login', { email: email.trim(), password });
+      mePromise = Promise.resolve(data.user);
+      return { ok: true };
+    } catch (err) {
+      return { ok: false, code: err.code, message: err.firstMessage || err.message };
     }
   }
 
-  // 로그인한 사용자 { email, nickname } 또는 null
-  function currentUser() {
-    return read(SESSION_KEY, null);
+  async function logOut() {
+    try {
+      await Api.post('/api/auth/logout');
+    } finally {
+      mePromise = Promise.resolve(null);
+    }
   }
 
-  return { signUp, logIn, logOut, currentUser };
+  // 메일의 인증 키로 이메일 인증
+  async function verifyEmail(key) {
+    await Api.post('/api/auth/email/verify', { key });
+  }
+
+  return { signUp, logIn, logOut, currentUser, refresh, verifyEmail };
 })();

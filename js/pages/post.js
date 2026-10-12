@@ -1,70 +1,263 @@
 /**
- * 글 상세: 제목, 본문, 태그, 이전/다음 글, 수정/삭제
+ * 기록 (SCR-09)
+ * post?address=minju&no=3
  */
-function postNavHTML(post, label, className) {
-  if (!post) {
-    return `<div class="none ${className}"><span class="label">${label}</span><span class="title">글이 없습니다</span></div>`;
-  }
-  return `
-    <a class="${className}" href="post.html?id=${post.id}">
-      <span class="label">${label}</span>
-      <span class="title">${escapeHTML(post.title)}</span>
-    </a>`;
+const params = new URLSearchParams(location.search);
+const address = params.get('address') || '';
+const no = Number(params.get('no'));
+
+// 낙관 글자: 닉네임 앞 두 글자를 위아래로
+function nakgwanHTML(nickname) {
+  return [...nickname].slice(0, 2).map(escapeHTML).join('<br>');
 }
 
-function renderPost() {
-  const id = getQueryParam('id');
-  const post = Store.getPost(id);
-  const content = document.getElementById('content');
+function renderGate(blog) {
+  const link = document.getElementById('blog-link');
+  link.href = Links.yard(blog.address);
+  link.textContent = blog.name;
+  const meta = document.getElementById('gate-meta');
+  const paintMeta = (count) => { meta.textContent = `${blog.owner.nickname} · 이웃 ${count}`; };
+  paintMeta(blog.subscriber_count);
+  document.getElementById('footer-address').textContent = `${blog.address}.한채도메인`;
 
-  if (!post) {
-    content.innerHTML = '<p class="empty">존재하지 않거나 삭제된 글입니다.</p>';
-    return;
-  }
+  const actions = document.getElementById('gate-actions');
+  actions.innerHTML = blog.is_owner
+    ? `<a class="btn btn-secondary" href="${Links.yard(blog.address)}">내 마당</a>`
+    : '<button type="button" class="btn" id="neighbor-button"></button>';
+  actions.insertAdjacentHTML('beforeend', '<button type="button" class="btn btn-secondary" id="guestbook-button">방명록</button>');
+  document.getElementById('guestbook-button').addEventListener('click', () => {
+    alert('방명록은 아직 준비 중이에요.');
+  });
+  if (!blog.is_owner) bindNeighborButton(document.getElementById('neighbor-button'), blog, paintMeta);
+}
 
-  Store.increaseViews(post.id);
-  post.views += 1;
-  document.title = `${post.title} - ${BLOG.title}`;
+function roomLink(category) {
+  return Links.yard(address, { category: category ? category.id : 'none' });
+}
 
-  const tags = post.tags
-    .map((tag) => `<a class="tag" href="tag.html?name=${encodeURIComponent(tag)}">#${escapeHTML(tag)}</a>`)
+function renderArticle(post, blog) {
+  document.title = `${post.title} · ${blog.name}`;
+  document.getElementById('breadcrumb').innerHTML = `
+    <a href="/">마을</a><span aria-hidden="true">›</span>
+    <a href="${Links.yard(address)}">${escapeHTML(blog.name)}</a><span aria-hidden="true">›</span>
+    <a href="${roomLink(post.category)}">${escapeHTML(roomName(post.category))}</a><span aria-hidden="true">›</span>
+    <span aria-current="page">${escapeHTML(post.title)}</span>`;
+
+  const room = document.getElementById('room-link');
+  room.href = roomLink(post.category);
+  room.textContent = post.category ? `${post.category.name}방에 쌓인 기록` : '마루에 놓인 기록';
+
+  const meta = [formatLongDate(post.published_at), `조회 ${post.view_count}`];
+  if (post.topic) meta.push(`골목 ${post.topic.name}`);
+  if (post.visibility === 'PRIVATE') meta.push('나만 보기');
+  document.getElementById('post-title').textContent = post.title;
+  document.getElementById('post-meta').textContent = meta.join(' · ');
+
+  // 서버가 정제한 본문이지만, 화면에 넣기 전에 한 번 더 거른다
+  document.getElementById('post-body').innerHTML = sanitizeHTML(post.content);
+
+  document.getElementById('post-tags').innerHTML = post.tags
+    .map((t) => `<a class="tag" href="${Links.yard(address, { tag: t })}">#${escapeHTML(t)}</a>`)
     .join('');
 
-  const { newer, older } = Store.getAdjacentPosts(post.id);
+  document.getElementById('owner-name').textContent = blog.owner.nickname;
+  const nakgwan = document.getElementById('nakgwan');
+  nakgwan.innerHTML = nakgwanHTML(blog.owner.nickname);
+  nakgwan.setAttribute('aria-label', `낙관 ${blog.owner.nickname}`);
+}
 
-  content.innerHTML = `
-    <article class="post-detail">
-      <header class="post-header">
-        <a class="category-label" href="category.html?name=${encodeURIComponent(post.category)}">${escapeHTML(post.category)}</a>
-        <h1>${escapeHTML(post.title)}</h1>
-        <div class="post-info">
-          <span>${formatDate(post.createdAt)}</span>
-          <span>조회 ${post.views}</span>
-          <div class="post-actions">
-            <a href="admin/write.html?id=${post.id}">수정</a>
-            <button type="button" id="delete-post">삭제</button>
-          </div>
-        </div>
-      </header>
+function renderLike(liked, count) {
+  document.getElementById('like-button').setAttribute('aria-pressed', String(liked));
+  document.getElementById('like-label').textContent = `공감 ${count}`;
+}
 
-      <div class="post-content">${sanitizeHTML(post.content)}</div>
+function bindActions(post) {
+  let liked = post.liked_by_me;
+  renderLike(liked, post.like_count);
 
-      ${tags ? `<div class="post-tags">${tags}</div>` : ''}
+  const likeButton = document.getElementById('like-button');
+  if (post.is_owner) {
+    // 내 기록에는 공감할 수 없다 (API 명세서 4.6)
+    likeButton.disabled = true;
+    likeButton.title = '내 기록에는 공감할 수 없어요';
+  }
+  likeButton.addEventListener('click', async () => {
+    if (!(await Auth.currentUser())) {
+      location.href = Links.login(Links.here());
+      return;
+    }
+    try {
+      const result = await Store.setLike(address, no, !liked);
+      liked = result.liked;
+      renderLike(liked, result.like_count);
+    } catch (err) {
+      alert(err.message);
+    }
+  });
 
-      <nav class="post-nav" aria-label="이전 글, 다음 글">
-        ${postNavHTML(older, '이전 글', 'prev')}
-        ${postNavHTML(newer, '다음 글', 'next')}
-      </nav>
-    </article>`;
+  document.getElementById('copy-button').addEventListener('click', async (e) => {
+    try {
+      await navigator.clipboard.writeText(location.href);
+      e.target.textContent = '복사했어요';
+    } catch (err) {
+      prompt('이 주소를 복사하세요', location.href);
+    }
+  });
 
-  document.getElementById('delete-post').addEventListener('click', () => {
-    if (!confirm('이 글을 삭제할까요? 삭제한 글은 되돌릴 수 없습니다.')) return;
-    if (Store.deletePost(post.id)) {
-      location.href = 'blog.html';
-    } else {
-      alert('삭제하지 못했습니다. 다시 시도해 주세요.');
+  if (!post.is_owner) return;
+  document.getElementById('owner-tools').hidden = false;
+  document.getElementById('edit-link').href = Links.write(no);
+  document.getElementById('delete-button').addEventListener('click', async () => {
+    if (!confirm('이 기록을 삭제할까요? 댓글과 공감도 함께 사라져요.')) return;
+    try {
+      await Store.deletePost(address, no);
+      location.href = Links.yard(address);
+    } catch (err) {
+      alert(err.message);
     }
   });
 }
 
-renderPost();
+function renderNav(post) {
+  const nav = document.getElementById('post-nav');
+  const { prev, next } = post;
+  if (!prev && !next) {
+    nav.hidden = true;
+    return;
+  }
+  nav.innerHTML = (prev
+    ? `<a class="card" href="${Links.post(address, prev.no)}"><span class="post-nav-label">‹ 이전 기록</span><span class="post-nav-title">${escapeHTML(prev.title)}</span></a>`
+    : '') + (next
+    ? `<a class="card next" href="${Links.post(address, next.no)}"><span class="post-nav-label">다음 기록 ›</span><span class="post-nav-title">${escapeHTML(next.title)}</span></a>`
+    : '');
+}
+
+// ----- 댓글 -----
+function commentHTML(c) {
+  const name = c.author.withdrawn ? '떠난 사람' : escapeHTML(c.author.nickname);
+  const authorLink = c.author.blog_address
+    ? `<a class="comment-name" href="${Links.yard(c.author.blog_address)}">${name}</a>`
+    : `<span class="comment-name">${name}</span>`;
+  const text = c.hidden ? '<em class="comment-hidden">관리자가 숨긴 댓글이에요.</em>' : escapeHTML(c.content);
+  const edited = c.edited_at ? ' · 고침' : '';
+  const remove = c.can_delete ? `<button type="button" class="comment-delete" data-delete="${c.id}">삭제</button>` : '';
+  return `
+    <li class="comment">
+      <div class="comment-avatar" aria-hidden="true"></div>
+      <div class="comment-body">
+        <div class="comment-head">
+          ${authorLink}
+          <span class="comment-when">${formatDateTime(c.created_at)}${edited}</span>
+          ${remove}
+        </div>
+        <p class="comment-text">${text}</p>
+      </div>
+    </li>`;
+}
+
+async function loadComments() {
+  const { items, count } = await Store.getComments(address, no);
+  document.getElementById('comments-title').textContent = `댓글 ${count}`;
+  document.getElementById('comment-list').innerHTML = items.map(commentHTML).join('');
+}
+
+document.getElementById('comment-list').addEventListener('click', async (e) => {
+  const button = e.target.closest('[data-delete]');
+  if (!button || !confirm('이 댓글을 지울까요?')) return;
+  try {
+    await Store.deleteComment(button.dataset.delete);
+    await loadComments();
+  } catch (err) {
+    alert(err.message);
+  }
+});
+
+function bindCommentForm(user) {
+  const form = document.getElementById('comment-form');
+  if (!user) {
+    form.innerHTML = `<p class="comment-login"><a class="text-link" href="${Links.login(Links.here())}">로그인</a>하면 댓글을 남길 수 있어요.</p>`;
+    return;
+  }
+  const text = document.getElementById('comment-text');
+  const count = document.getElementById('comment-count');
+  const button = form.querySelector('button[type="submit"]');
+  let clientToken = newClientToken();
+
+  text.addEventListener('input', () => {
+    count.textContent = `${text.value.length.toLocaleString()} / 1,000`;
+  });
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const value = text.value.trim();
+    if (!value) {
+      text.focus();
+      return;
+    }
+    button.disabled = true;
+    try {
+      await Store.addComment(address, no, value, clientToken);
+      clientToken = newClientToken(); // 다음 댓글은 새 토큰으로
+      text.value = '';
+      count.textContent = '0 / 1,000';
+      await loadComments();
+    } catch (err) {
+      alert(err.firstMessage || err.message);
+    } finally {
+      button.disabled = false;
+    }
+  });
+}
+
+// ----- 사이드바 -----
+async function renderSide(post) {
+  const rooms = await Store.getRooms(address);
+  const item = (label, count, href, current) => `
+    <li><a href="${href}"${current ? ' aria-current="page"' : ''}>
+      <span class="name">${escapeHTML(label)}</span><span class="count">${count}</span>
+    </a></li>`;
+  const currentId = post.category ? post.category.id : null;
+  const list = [
+    item('모든 기록', rooms.total_count, Links.yard(address), false),
+    ...rooms.rooms.map((r) => item(r.name, r.post_count, roomLink(r), r.id === currentId)),
+  ];
+  if (rooms.uncategorized_count) list.push(item('마루', rooms.uncategorized_count, roomLink(null), currentId === null));
+  document.getElementById('room-list').innerHTML = list.join('');
+
+  const same = (await Store.listPosts(address, { category: currentId || 'none', size: 6 })).items
+    .filter((p) => p.no !== no)
+    .slice(0, 5);
+  if (same.length) {
+    document.getElementById('same-room').hidden = false;
+    document.getElementById('same-room-title').textContent = post.category ? `${post.category.name}방의 다른 기록` : '마루의 다른 기록';
+    document.getElementById('same-room-list').innerHTML = same
+      .map((p) => `<li><a href="${Links.post(address, p.no)}">${escapeHTML(p.title)}</a></li>`)
+      .join('');
+  }
+}
+
+async function main() {
+  bindVillageSearch(document.getElementById('village-search'));
+  const { user } = await renderHeaderNav(document.getElementById('header-nav'));
+
+  const [blog, post] = await Promise.all([Store.getBlog(address), Store.getPost(address, no)]);
+  if (!blog || !post) {
+    if (blog) document.getElementById('not-found-link').href = Links.yard(address);
+    document.getElementById('not-found').hidden = false;
+    return;
+  }
+
+  // 조회는 따로 알린다. 같은 사람이 30분 안에 다시 열면 서버가 세지 않는다
+  Store.addView(address, no).catch(() => {});
+
+  renderGate(blog);
+  renderArticle(post, blog);
+  bindActions(post);
+  renderNav(post);
+  bindCommentForm(user);
+  await Promise.all([loadComments(), renderSide(post)]);
+
+  document.getElementById('gate').hidden = false;
+  document.getElementById('house').hidden = false;
+}
+
+main();

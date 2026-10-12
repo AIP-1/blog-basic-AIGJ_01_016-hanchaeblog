@@ -3,396 +3,124 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>한채</title>
+  <title>한채 · 마을</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Brush+Script&family=Noto+Serif+KR:wght@400;600;700&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gugi&family=Noto+Serif+KR:wght@400;600;700&display=swap">
   <link rel="stylesheet" href="css/reset.css">
-  <link rel="stylesheet" href="css/common.css">
-  <link rel="stylesheet" href="css/pages/landing.css">
+  <link rel="stylesheet" href="css/hanchae.css">
+  <link rel="stylesheet" href="css/pages/village.css">
 </head>
-<body class="landing">
-  <!-- 먹 번짐 장식 -->
-  <div class="ink ink-1" aria-hidden="true"></div>
-  <div class="ink ink-2" aria-hidden="true"></div>
-
-  <main class="hero">
-    <h1 class="sr-only">한채</h1>
-    <p class="hero-eyebrow">오늘의 이야기가 머무는 곳</p>
-
-    <!-- 누르면 대문이 열린다 -->
-    <button type="button" id="knock" class="knock" aria-controls="auth-panel">이리오너라</button>
-
-    <!-- 기와집: 지붕·기둥·현판은 그림(SVG), 대문 두 짝은 열리도록 따로 만든다 -->
-    <div class="house">
-      <svg class="house-art" viewBox="0 0 900 720" aria-hidden="true">
-        <defs>
-          <clipPath id="roof-clip"><path d="M240 70 Q450 62 660 70 C720 130 790 210 880 196 Q840 236 780 238 Q450 254 120 238 Q60 236 20 196 C110 210 180 130 240 70 Z"/></clipPath>
-          <!-- 골기와 줄무늬 -->
-          <pattern id="tiles" width="22" height="10" patternUnits="userSpaceOnUse">
-            <rect width="10" height="10" fill="#4a4844"/>
-          </pattern>
-          <!-- 돌 쌓은 무늬 -->
-          <pattern id="stone" width="48" height="26" patternUnits="userSpaceOnUse">
-            <rect width="48" height="26" fill="#a39d92"/>
-            <path d="M0 .5H48M0 13.5H48M24 0V13M0 13V26M48 13V26" stroke="#8a847a" stroke-width="1"/>
-          </pattern>
-        </defs>
-
-        <!-- 기단과 계단 -->
-        <rect x="60" y="650" width="780" height="40" fill="url(#stone)"/>
-        <rect x="330" y="690" width="240" height="14" fill="#948e84"/>
-        <rect x="350" y="704" width="200" height="14" fill="#8a847a"/>
-
-        <!-- 양옆 벽: 회벽, 살창, 아래 돌 -->
-        <rect x="98" y="306" width="164" height="344" fill="#efe7d6"/>
-        <rect x="98" y="540" width="164" height="110" fill="url(#stone)"/>
-        <rect x="98" y="420" width="164" height="10" fill="#8e3b2a"/>
-        <rect x="140" y="336" width="80" height="62" fill="#3a2a20" stroke="#8e3b2a" stroke-width="6"/>
-        <path d="M150 336V398M162 336V398M174 336V398M186 336V398M198 336V398M210 336V398" stroke="#8e3b2a" stroke-width="4"/>
-        <rect x="638" y="306" width="164" height="344" fill="#efe7d6"/>
-        <rect x="638" y="540" width="164" height="110" fill="url(#stone)"/>
-        <rect x="638" y="420" width="164" height="10" fill="#8e3b2a"/>
-        <rect x="680" y="336" width="80" height="62" fill="#3a2a20" stroke="#8e3b2a" stroke-width="6"/>
-        <path d="M690 336V398M702 336V398M714 336V398M726 336V398M738 336V398M750 336V398" stroke="#8e3b2a" stroke-width="4"/>
-
-        <!-- 대문 위 벽 -->
-        <rect x="290" y="306" width="320" height="136" fill="#efe7d6"/>
-
-        <!-- 기둥 (석간주) -->
-        <rect x="80" y="300" width="18" height="350" fill="#8e3b2a"/>
-        <rect x="94" y="300" width="4" height="350" fill="#6e2a1d"/>
-        <rect x="802" y="300" width="18" height="350" fill="#8e3b2a"/>
-        <rect x="816" y="300" width="4" height="350" fill="#6e2a1d"/>
-        <rect x="262" y="300" width="28" height="350" fill="#8e3b2a"/>
-        <rect x="286" y="300" width="4" height="350" fill="#6e2a1d"/>
-        <rect x="610" y="300" width="28" height="350" fill="#8e3b2a"/>
-        <rect x="634" y="300" width="4" height="350" fill="#6e2a1d"/>
-
-        <!-- 대문 위 인방 -->
-        <rect x="290" y="430" width="320" height="12" fill="#6e2a1d"/>
-
-        <!-- 창방: 뇌록 바탕 + 머리초 + 가운데 문양 -->
-        <rect x="70" y="282" width="760" height="24" fill="#3d7a5a"/>
-        <rect x="98" y="282" width="6" height="24" fill="#b8372b"/>
-        <rect x="256" y="282" width="6" height="24" fill="#b8372b"/>
-        <rect x="104" y="282" width="6" height="24" fill="#f3ecd8"/>
-        <rect x="250" y="282" width="6" height="24" fill="#f3ecd8"/>
-        <rect x="110" y="282" width="6" height="24" fill="#2f5d8a"/>
-        <rect x="244" y="282" width="6" height="24" fill="#2f5d8a"/>
-        <rect x="116" y="282" width="6" height="24" fill="#f3ecd8"/>
-        <rect x="238" y="282" width="6" height="24" fill="#f3ecd8"/>
-        <rect x="122" y="282" width="6" height="24" fill="#e2b84a"/>
-        <rect x="232" y="282" width="6" height="24" fill="#e2b84a"/>
-        <rect x="128" y="282" width="6" height="24" fill="#f3ecd8"/>
-        <rect x="226" y="282" width="6" height="24" fill="#f3ecd8"/>
-        <rect x="134" y="282" width="6" height="24" fill="#b8372b"/>
-        <rect x="220" y="282" width="6" height="24" fill="#b8372b"/>
-        <circle cx="180" cy="294" r="10" fill="#e2b84a"/>
-        <circle cx="180" cy="294" r="6.2" fill="#b8372b"/>
-        <circle cx="180" cy="294" r="2.5" fill="#f3ecd8"/>
-        <rect x="144" y="285" width="16" height="18" fill="#2f5d8a"/>
-        <rect x="200" y="285" width="16" height="18" fill="#2f5d8a"/>
-        <rect x="290" y="282" width="6" height="24" fill="#b8372b"/>
-        <rect x="604" y="282" width="6" height="24" fill="#b8372b"/>
-        <rect x="296" y="282" width="6" height="24" fill="#f3ecd8"/>
-        <rect x="598" y="282" width="6" height="24" fill="#f3ecd8"/>
-        <rect x="302" y="282" width="6" height="24" fill="#2f5d8a"/>
-        <rect x="592" y="282" width="6" height="24" fill="#2f5d8a"/>
-        <rect x="308" y="282" width="6" height="24" fill="#f3ecd8"/>
-        <rect x="586" y="282" width="6" height="24" fill="#f3ecd8"/>
-        <rect x="314" y="282" width="6" height="24" fill="#e2b84a"/>
-        <rect x="580" y="282" width="6" height="24" fill="#e2b84a"/>
-        <rect x="320" y="282" width="6" height="24" fill="#f3ecd8"/>
-        <rect x="574" y="282" width="6" height="24" fill="#f3ecd8"/>
-        <rect x="326" y="282" width="6" height="24" fill="#b8372b"/>
-        <rect x="568" y="282" width="6" height="24" fill="#b8372b"/>
-        <circle cx="450" cy="294" r="10" fill="#e2b84a"/>
-        <circle cx="450" cy="294" r="6.2" fill="#b8372b"/>
-        <circle cx="450" cy="294" r="2.5" fill="#f3ecd8"/>
-        <rect x="414" y="285" width="16" height="18" fill="#2f5d8a"/>
-        <rect x="470" y="285" width="16" height="18" fill="#2f5d8a"/>
-        <rect x="638" y="282" width="6" height="24" fill="#b8372b"/>
-        <rect x="796" y="282" width="6" height="24" fill="#b8372b"/>
-        <rect x="644" y="282" width="6" height="24" fill="#f3ecd8"/>
-        <rect x="790" y="282" width="6" height="24" fill="#f3ecd8"/>
-        <rect x="650" y="282" width="6" height="24" fill="#2f5d8a"/>
-        <rect x="784" y="282" width="6" height="24" fill="#2f5d8a"/>
-        <rect x="656" y="282" width="6" height="24" fill="#f3ecd8"/>
-        <rect x="778" y="282" width="6" height="24" fill="#f3ecd8"/>
-        <rect x="662" y="282" width="6" height="24" fill="#e2b84a"/>
-        <rect x="772" y="282" width="6" height="24" fill="#e2b84a"/>
-        <rect x="668" y="282" width="6" height="24" fill="#f3ecd8"/>
-        <rect x="766" y="282" width="6" height="24" fill="#f3ecd8"/>
-        <rect x="674" y="282" width="6" height="24" fill="#b8372b"/>
-        <rect x="760" y="282" width="6" height="24" fill="#b8372b"/>
-        <circle cx="720" cy="294" r="10" fill="#e2b84a"/>
-        <circle cx="720" cy="294" r="6.2" fill="#b8372b"/>
-        <circle cx="720" cy="294" r="2.5" fill="#f3ecd8"/>
-        <rect x="684" y="285" width="16" height="18" fill="#2f5d8a"/>
-        <rect x="740" y="285" width="16" height="18" fill="#2f5d8a"/>
-        <path d="M70 283.5H830M70 304.5H830" stroke="#f3ecd8" stroke-width="1.5"/>
-
-        <!-- 소로: 보 사이의 작은 받침 -->
-        <rect x="70" y="276" width="760" height="6" fill="#3a2a20"/>
-        <rect x="78" y="276" width="12" height="6" fill="#2e6a52"/>
-        <rect x="102" y="276" width="12" height="6" fill="#2e6a52"/>
-        <rect x="126" y="276" width="12" height="6" fill="#2e6a52"/>
-        <rect x="150" y="276" width="12" height="6" fill="#2e6a52"/>
-        <rect x="174" y="276" width="12" height="6" fill="#2e6a52"/>
-        <rect x="198" y="276" width="12" height="6" fill="#2e6a52"/>
-        <rect x="222" y="276" width="12" height="6" fill="#2e6a52"/>
-        <rect x="246" y="276" width="12" height="6" fill="#2e6a52"/>
-        <rect x="270" y="276" width="12" height="6" fill="#2e6a52"/>
-        <rect x="294" y="276" width="12" height="6" fill="#2e6a52"/>
-        <rect x="318" y="276" width="12" height="6" fill="#2e6a52"/>
-        <rect x="342" y="276" width="12" height="6" fill="#2e6a52"/>
-        <rect x="366" y="276" width="12" height="6" fill="#2e6a52"/>
-        <rect x="390" y="276" width="12" height="6" fill="#2e6a52"/>
-        <rect x="414" y="276" width="12" height="6" fill="#2e6a52"/>
-        <rect x="438" y="276" width="12" height="6" fill="#2e6a52"/>
-        <rect x="462" y="276" width="12" height="6" fill="#2e6a52"/>
-        <rect x="486" y="276" width="12" height="6" fill="#2e6a52"/>
-        <rect x="510" y="276" width="12" height="6" fill="#2e6a52"/>
-        <rect x="534" y="276" width="12" height="6" fill="#2e6a52"/>
-        <rect x="558" y="276" width="12" height="6" fill="#2e6a52"/>
-        <rect x="582" y="276" width="12" height="6" fill="#2e6a52"/>
-        <rect x="606" y="276" width="12" height="6" fill="#2e6a52"/>
-        <rect x="630" y="276" width="12" height="6" fill="#2e6a52"/>
-        <rect x="654" y="276" width="12" height="6" fill="#2e6a52"/>
-        <rect x="678" y="276" width="12" height="6" fill="#2e6a52"/>
-        <rect x="702" y="276" width="12" height="6" fill="#2e6a52"/>
-        <rect x="726" y="276" width="12" height="6" fill="#2e6a52"/>
-        <rect x="750" y="276" width="12" height="6" fill="#2e6a52"/>
-        <rect x="774" y="276" width="12" height="6" fill="#2e6a52"/>
-        <rect x="798" y="276" width="12" height="6" fill="#2e6a52"/>
-
-        <!-- 평방: 뇌록 바탕 + 머리초 + 가운데 문양 -->
-        <rect x="70" y="258" width="760" height="18" fill="#3d7a5a"/>
-        <rect x="98" y="258" width="6" height="18" fill="#b8372b"/>
-        <rect x="256" y="258" width="6" height="18" fill="#b8372b"/>
-        <rect x="104" y="258" width="6" height="18" fill="#f3ecd8"/>
-        <rect x="250" y="258" width="6" height="18" fill="#f3ecd8"/>
-        <rect x="110" y="258" width="6" height="18" fill="#2f5d8a"/>
-        <rect x="244" y="258" width="6" height="18" fill="#2f5d8a"/>
-        <rect x="116" y="258" width="6" height="18" fill="#f3ecd8"/>
-        <rect x="238" y="258" width="6" height="18" fill="#f3ecd8"/>
-        <rect x="122" y="258" width="6" height="18" fill="#e2b84a"/>
-        <rect x="232" y="258" width="6" height="18" fill="#e2b84a"/>
-        <rect x="128" y="258" width="6" height="18" fill="#f3ecd8"/>
-        <rect x="226" y="258" width="6" height="18" fill="#f3ecd8"/>
-        <rect x="134" y="258" width="6" height="18" fill="#b8372b"/>
-        <rect x="220" y="258" width="6" height="18" fill="#b8372b"/>
-        <circle cx="180" cy="267" r="7" fill="#e2b84a"/>
-        <circle cx="180" cy="267" r="4.3" fill="#b8372b"/>
-        <circle cx="180" cy="267" r="1.8" fill="#f3ecd8"/>
-        <rect x="147" y="261" width="16" height="12" fill="#2f5d8a"/>
-        <rect x="197" y="261" width="16" height="12" fill="#2f5d8a"/>
-        <rect x="290" y="258" width="6" height="18" fill="#b8372b"/>
-        <rect x="604" y="258" width="6" height="18" fill="#b8372b"/>
-        <rect x="296" y="258" width="6" height="18" fill="#f3ecd8"/>
-        <rect x="598" y="258" width="6" height="18" fill="#f3ecd8"/>
-        <rect x="302" y="258" width="6" height="18" fill="#2f5d8a"/>
-        <rect x="592" y="258" width="6" height="18" fill="#2f5d8a"/>
-        <rect x="308" y="258" width="6" height="18" fill="#f3ecd8"/>
-        <rect x="586" y="258" width="6" height="18" fill="#f3ecd8"/>
-        <rect x="314" y="258" width="6" height="18" fill="#e2b84a"/>
-        <rect x="580" y="258" width="6" height="18" fill="#e2b84a"/>
-        <rect x="320" y="258" width="6" height="18" fill="#f3ecd8"/>
-        <rect x="574" y="258" width="6" height="18" fill="#f3ecd8"/>
-        <rect x="326" y="258" width="6" height="18" fill="#b8372b"/>
-        <rect x="568" y="258" width="6" height="18" fill="#b8372b"/>
-        <circle cx="450" cy="267" r="7" fill="#e2b84a"/>
-        <circle cx="450" cy="267" r="4.3" fill="#b8372b"/>
-        <circle cx="450" cy="267" r="1.8" fill="#f3ecd8"/>
-        <rect x="417" y="261" width="16" height="12" fill="#2f5d8a"/>
-        <rect x="467" y="261" width="16" height="12" fill="#2f5d8a"/>
-        <rect x="638" y="258" width="6" height="18" fill="#b8372b"/>
-        <rect x="796" y="258" width="6" height="18" fill="#b8372b"/>
-        <rect x="644" y="258" width="6" height="18" fill="#f3ecd8"/>
-        <rect x="790" y="258" width="6" height="18" fill="#f3ecd8"/>
-        <rect x="650" y="258" width="6" height="18" fill="#2f5d8a"/>
-        <rect x="784" y="258" width="6" height="18" fill="#2f5d8a"/>
-        <rect x="656" y="258" width="6" height="18" fill="#f3ecd8"/>
-        <rect x="778" y="258" width="6" height="18" fill="#f3ecd8"/>
-        <rect x="662" y="258" width="6" height="18" fill="#e2b84a"/>
-        <rect x="772" y="258" width="6" height="18" fill="#e2b84a"/>
-        <rect x="668" y="258" width="6" height="18" fill="#f3ecd8"/>
-        <rect x="766" y="258" width="6" height="18" fill="#f3ecd8"/>
-        <rect x="674" y="258" width="6" height="18" fill="#b8372b"/>
-        <rect x="760" y="258" width="6" height="18" fill="#b8372b"/>
-        <circle cx="720" cy="267" r="7" fill="#e2b84a"/>
-        <circle cx="720" cy="267" r="4.3" fill="#b8372b"/>
-        <circle cx="720" cy="267" r="1.8" fill="#f3ecd8"/>
-        <rect x="687" y="261" width="16" height="12" fill="#2f5d8a"/>
-        <rect x="737" y="261" width="16" height="12" fill="#2f5d8a"/>
-        <path d="M70 259.5H830M70 274.5H830" stroke="#f3ecd8" stroke-width="1.5"/>
-
-        <!-- 기와지붕 -->
-        <path d="M240 70 Q450 62 660 70 C720 130 790 210 880 196 Q840 236 780 238 Q450 254 120 238 Q60 236 20 196 C110 210 180 130 240 70 Z" fill="#33322f"/>
-        <rect x="0" y="40" width="900" height="220" fill="url(#tiles)" clip-path="url(#roof-clip)"/>
-        <path d="M20 196 Q60 236 120 238 Q450 254 780 238 Q840 236 880 196" fill="none" stroke="#252422" stroke-width="9" stroke-linecap="round"/>
-        <!-- 용마루: 위는 검은 기와, 아래는 흰 양성바름 -->
-        <path d="M222 54 Q450 40 678 54 L672 78 Q450 66 228 78 Z" fill="#e6e0d2"/>
-        <path d="M214 46 Q450 30 686 46 L682 58 Q450 44 218 58 Z" fill="#252422"/>
-
-        <!-- 서까래 마구리 (처마 밑 둥근 끝) -->
-        <circle cx="140" cy="242.9" r="7" fill="#2e6a52"/>
-        <circle cx="140" cy="242.9" r="4" fill="#e2b84a"/>
-        <circle cx="140" cy="242.9" r="1.8" fill="#b8372b"/>
-        <circle cx="164" cy="244.0" r="7" fill="#2e6a52"/>
-        <circle cx="164" cy="244.0" r="4" fill="#e2b84a"/>
-        <circle cx="164" cy="244.0" r="1.8" fill="#b8372b"/>
-        <circle cx="188" cy="245.0" r="7" fill="#2e6a52"/>
-        <circle cx="188" cy="245.0" r="4" fill="#e2b84a"/>
-        <circle cx="188" cy="245.0" r="1.8" fill="#b8372b"/>
-        <circle cx="212" cy="245.8" r="7" fill="#2e6a52"/>
-        <circle cx="212" cy="245.8" r="4" fill="#e2b84a"/>
-        <circle cx="212" cy="245.8" r="1.8" fill="#b8372b"/>
-        <circle cx="236" cy="246.6" r="7" fill="#2e6a52"/>
-        <circle cx="236" cy="246.6" r="4" fill="#e2b84a"/>
-        <circle cx="236" cy="246.6" r="1.8" fill="#b8372b"/>
-        <circle cx="260" cy="247.3" r="7" fill="#2e6a52"/>
-        <circle cx="260" cy="247.3" r="4" fill="#e2b84a"/>
-        <circle cx="260" cy="247.3" r="1.8" fill="#b8372b"/>
-        <circle cx="284" cy="248.0" r="7" fill="#2e6a52"/>
-        <circle cx="284" cy="248.0" r="4" fill="#e2b84a"/>
-        <circle cx="284" cy="248.0" r="1.8" fill="#b8372b"/>
-        <circle cx="308" cy="248.5" r="7" fill="#2e6a52"/>
-        <circle cx="308" cy="248.5" r="4" fill="#e2b84a"/>
-        <circle cx="308" cy="248.5" r="1.8" fill="#b8372b"/>
-        <circle cx="332" cy="249.0" r="7" fill="#2e6a52"/>
-        <circle cx="332" cy="249.0" r="4" fill="#e2b84a"/>
-        <circle cx="332" cy="249.0" r="1.8" fill="#b8372b"/>
-        <circle cx="356" cy="249.4" r="7" fill="#2e6a52"/>
-        <circle cx="356" cy="249.4" r="4" fill="#e2b84a"/>
-        <circle cx="356" cy="249.4" r="1.8" fill="#b8372b"/>
-        <circle cx="380" cy="249.6" r="7" fill="#2e6a52"/>
-        <circle cx="380" cy="249.6" r="4" fill="#e2b84a"/>
-        <circle cx="380" cy="249.6" r="1.8" fill="#b8372b"/>
-        <circle cx="404" cy="249.8" r="7" fill="#2e6a52"/>
-        <circle cx="404" cy="249.8" r="4" fill="#e2b84a"/>
-        <circle cx="404" cy="249.8" r="1.8" fill="#b8372b"/>
-        <circle cx="428" cy="250.0" r="7" fill="#2e6a52"/>
-        <circle cx="428" cy="250.0" r="4" fill="#e2b84a"/>
-        <circle cx="428" cy="250.0" r="1.8" fill="#b8372b"/>
-        <circle cx="452" cy="250.0" r="7" fill="#2e6a52"/>
-        <circle cx="452" cy="250.0" r="4" fill="#e2b84a"/>
-        <circle cx="452" cy="250.0" r="1.8" fill="#b8372b"/>
-        <circle cx="476" cy="250.0" r="7" fill="#2e6a52"/>
-        <circle cx="476" cy="250.0" r="4" fill="#e2b84a"/>
-        <circle cx="476" cy="250.0" r="1.8" fill="#b8372b"/>
-        <circle cx="500" cy="249.8" r="7" fill="#2e6a52"/>
-        <circle cx="500" cy="249.8" r="4" fill="#e2b84a"/>
-        <circle cx="500" cy="249.8" r="1.8" fill="#b8372b"/>
-        <circle cx="524" cy="249.6" r="7" fill="#2e6a52"/>
-        <circle cx="524" cy="249.6" r="4" fill="#e2b84a"/>
-        <circle cx="524" cy="249.6" r="1.8" fill="#b8372b"/>
-        <circle cx="548" cy="249.3" r="7" fill="#2e6a52"/>
-        <circle cx="548" cy="249.3" r="4" fill="#e2b84a"/>
-        <circle cx="548" cy="249.3" r="1.8" fill="#b8372b"/>
-        <circle cx="572" cy="248.9" r="7" fill="#2e6a52"/>
-        <circle cx="572" cy="248.9" r="4" fill="#e2b84a"/>
-        <circle cx="572" cy="248.9" r="1.8" fill="#b8372b"/>
-        <circle cx="596" cy="248.4" r="7" fill="#2e6a52"/>
-        <circle cx="596" cy="248.4" r="4" fill="#e2b84a"/>
-        <circle cx="596" cy="248.4" r="1.8" fill="#b8372b"/>
-        <circle cx="620" cy="247.9" r="7" fill="#2e6a52"/>
-        <circle cx="620" cy="247.9" r="4" fill="#e2b84a"/>
-        <circle cx="620" cy="247.9" r="1.8" fill="#b8372b"/>
-        <circle cx="644" cy="247.2" r="7" fill="#2e6a52"/>
-        <circle cx="644" cy="247.2" r="4" fill="#e2b84a"/>
-        <circle cx="644" cy="247.2" r="1.8" fill="#b8372b"/>
-        <circle cx="668" cy="246.5" r="7" fill="#2e6a52"/>
-        <circle cx="668" cy="246.5" r="4" fill="#e2b84a"/>
-        <circle cx="668" cy="246.5" r="1.8" fill="#b8372b"/>
-        <circle cx="692" cy="245.7" r="7" fill="#2e6a52"/>
-        <circle cx="692" cy="245.7" r="4" fill="#e2b84a"/>
-        <circle cx="692" cy="245.7" r="1.8" fill="#b8372b"/>
-        <circle cx="716" cy="244.8" r="7" fill="#2e6a52"/>
-        <circle cx="716" cy="244.8" r="4" fill="#e2b84a"/>
-        <circle cx="716" cy="244.8" r="1.8" fill="#b8372b"/>
-        <circle cx="740" cy="243.8" r="7" fill="#2e6a52"/>
-        <circle cx="740" cy="243.8" r="4" fill="#e2b84a"/>
-        <circle cx="740" cy="243.8" r="1.8" fill="#b8372b"/>
-        <circle cx="764" cy="242.8" r="7" fill="#2e6a52"/>
-        <circle cx="764" cy="242.8" r="4" fill="#e2b84a"/>
-        <circle cx="764" cy="242.8" r="1.8" fill="#b8372b"/>
-
-        <!-- 현판: 붉은 테 + 청록 띠 + 검은 판 -->
-        <rect x="282" y="308" width="336" height="120" rx="3" fill="#b8372b"/>
-        <rect x="290" y="316" width="320" height="104" fill="#3d7a5a"/>
-        <rect x="296" y="322" width="308" height="92" fill="#1f1a15"/>
-        <text class="plaque-text" x="450" y="368" text-anchor="middle" dominant-baseline="central">한채</text>
-      </svg>
-
-      <div class="doorway" aria-hidden="true">
-        <div class="door door-left"></div>
-        <div class="door door-right"></div>
-      </div>
-    </div>
-
-    <p class="hero-desc">하나씩 배우고, 한 줄씩 적어 내려갑니다.</p>
-    <a class="browse-link" href="blog.html">로그인 없이 둘러보기</a>
-  </main>
-
-  <!-- 산수화 느낌의 먼 산 -->
-  <svg class="mountains" viewBox="0 0 1440 320" preserveAspectRatio="none" aria-hidden="true">
-    <path class="far" d="M0 210 C120 150 200 170 300 120 C380 80 450 140 540 150 C640 160 700 70 820 60 C930 50 980 150 1080 160 C1180 170 1250 110 1340 120 C1400 126 1430 150 1440 160 V320 H0 Z"/>
-    <path class="near" d="M0 260 C90 230 170 250 260 215 C350 180 420 230 520 240 C620 250 690 200 780 190 C880 180 950 245 1060 250 C1160 255 1240 215 1330 220 C1390 223 1425 240 1440 245 V320 H0 Z"/>
-  </svg>
-
-  <!-- 문이 열린 뒤 나타나는 로그인 / 회원가입 -->
-  <div id="auth-panel" class="auth-panel" hidden>
-    <div class="auth-card" role="dialog" aria-modal="true" aria-labelledby="auth-title">
-      <button type="button" class="auth-close" aria-label="닫기">×</button>
-      <h2 id="auth-title" class="auth-title">어서 오십시오</h2>
-
-      <div class="auth-tabs" role="tablist">
-        <button type="button" role="tab" id="tab-login" data-tab="login" aria-controls="login-form" aria-selected="true">로그인</button>
-        <button type="button" role="tab" id="tab-signup" data-tab="signup" aria-controls="signup-form" aria-selected="false">회원가입</button>
-      </div>
-
-      <form id="login-form" class="auth-form" role="tabpanel" aria-labelledby="tab-login" novalidate>
-        <label>
-          이메일
-          <input type="email" name="email" autocomplete="email" required>
-        </label>
-        <label>
-          비밀번호
-          <input type="password" name="password" autocomplete="current-password" required>
-        </label>
-        <p class="auth-error" role="alert"></p>
-        <button type="submit" class="auth-submit">로그인</button>
-        <p class="auth-switch">아직 회원이 아니신가요? <button type="button" data-tab="signup">회원가입</button></p>
+<body>
+  <header class="hc-header">
+    <div class="hc-header-inner">
+      <a class="hc-logo" href="/">한채</a>
+      <form class="hc-search" id="village-search" role="search">
+        <label for="village-q" class="sr-only">마을에서 찾기</label>
+        <input id="village-q" name="q" type="search" placeholder="마을에서 기록과 한채 찾기">
+        <button type="submit" aria-label="찾기">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+        </button>
       </form>
-
-      <form id="signup-form" class="auth-form" role="tabpanel" aria-labelledby="tab-signup" novalidate hidden>
-        <label>
-          닉네임
-          <input type="text" name="nickname" autocomplete="nickname" minlength="2" maxlength="12" required>
-        </label>
-        <label>
-          이메일
-          <input type="email" name="email" autocomplete="email" required>
-        </label>
-        <label>
-          비밀번호 <span class="hint">8자 이상</span>
-          <input type="password" name="password" autocomplete="new-password" minlength="8" required>
-        </label>
-        <label>
-          비밀번호 확인
-          <input type="password" name="passwordConfirm" autocomplete="new-password" required>
-        </label>
-        <p class="auth-error" role="alert"></p>
-        <button type="submit" class="auth-submit">회원가입</button>
-        <p class="auth-switch">이미 회원이신가요? <button type="button" data-tab="login">로그인</button></p>
-      </form>
+      <nav class="hc-nav" id="header-nav" aria-label="내 메뉴">
+        <a class="btn btn-secondary" href="/login">로그인</a>
+      </nav>
     </div>
+  </header>
+  <div class="giwa" aria-hidden="true"></div>
+  <div class="dancheong-band" aria-hidden="true"></div>
+
+  <div class="village">
+    <main class="village-main">
+      <!-- 어귀 -->
+      <section class="entry card" aria-labelledby="entry-title">
+        <div class="entry-text">
+          <h1 id="entry-title" class="entry-title">한 사람, 한 채,<br>그 안의 기록</h1>
+          <p class="entry-desc">나만의 집을 짓고 기록을 쌓아 보세요. 마을을 거닐다 마음에 드는 한채와 이웃이 될 수 있어요.</p>
+          <div class="entry-actions">
+            <a class="btn btn-primary" href="/build">한채 짓기</a>
+            <a class="text-link" href="#fresh">마을 둘러보기</a>
+          </div>
+        </div>
+        <div class="window" aria-hidden="true">
+          <div class="window-roof"></div>
+          <div class="dancheong-band"></div>
+          <div class="window-frame"></div>
+        </div>
+      </section>
+
+      <!-- 골목 -->
+      <section class="section" aria-labelledby="alley-title">
+        <div class="section-head">
+          <h2 id="alley-title">골목</h2>
+          <span class="sub">관심 있는 골목을 골라 보세요</span>
+          <button type="button" class="more text-link" id="alley-more">이 골목 더 보기</button>
+        </div>
+        <div class="topic-list" id="topic-list" aria-label="골목 고르기"></div>
+        <div class="alley-posts" id="alley-posts" aria-live="polite">
+          <p class="empty">이 골목에는 아직 기록이 없어요.</p>
+        </div>
+      </section>
+
+      <!-- 이웃 소식: 로그인했을 때만 -->
+      <section class="neighbors" id="neighbors" aria-labelledby="neighbors-title" hidden>
+        <div class="section-head">
+          <h2 id="neighbors-title">이웃 소식</h2>
+          <span class="sub">이웃 한채에 새로 쌓인 기록</span>
+          <a class="more text-link" href="/me/neighbors">이웃 소식 전체</a>
+        </div>
+        <div class="neighbor-posts" id="neighbor-posts"></div>
+      </section>
+
+      <!-- 새 기록 -->
+      <section class="section fresh" id="fresh" aria-labelledby="fresh-title">
+        <div class="section-head">
+          <h2 id="fresh-title">새 기록</h2>
+          <span class="sub">마을에 방금 쌓인 기록</span>
+        </div>
+        <div id="fresh-posts"></div>
+      </section>
+    </main>
+
+    <aside class="village-side" aria-label="마을 소식">
+      <!-- 내 자리: 로그인 상태에 따라 village.js 가 채운다 -->
+      <section class="seat card" aria-label="내 자리">
+        <div class="giwa giwa-thin" aria-hidden="true"></div>
+        <div class="dancheong-band" aria-hidden="true"></div>
+        <div class="seat-body" id="seat"></div>
+      </section>
+
+      <section class="side-box card" aria-labelledby="rank-title">
+        <div class="section-head">
+          <h2 id="rank-title">지금 많이 읽는 기록</h2>
+        </div>
+        <ol class="rank-list" id="rank-list"></ol>
+      </section>
+
+      <section class="side-box card" aria-labelledby="house-title">
+        <div class="section-head">
+          <h2 id="house-title">북적이는 한채</h2>
+        </div>
+        <div class="house-list" id="house-list"></div>
+      </section>
+    </aside>
   </div>
 
+  <footer class="hc-footer">
+    <div class="dancheong-band" aria-hidden="true"></div>
+    <div class="hc-footer-inner">
+      <span class="hc-footer-logo">한채</span>
+      <span class="hc-footer-sub">한 사람, 한 채, 그 안의 기록</span>
+      <span class="hc-footer-sub">이용약관 · 개인정보처리방침</span>
+    </div>
+  </footer>
+
+  <script src="js/content.js"></script>
+  <script src="js/api.js"></script>
   <script src="js/auth.js"></script>
-  <script src="js/pages/landing.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/pages/village.js"></script>
 </body>
 </html>

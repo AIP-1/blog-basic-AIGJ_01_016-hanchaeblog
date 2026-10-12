@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>한채 · 로그인</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gugi&family=Noto+Serif+KR:wght@400;600;700&display=swap">
+  <link rel="stylesheet" href="css/reset.css">
+  <link rel="stylesheet" href="css/hanchae.css">
+  <link rel="stylesheet" href="css/pages/login.css">
+</head>
+<body>
+  <header class="hc-header">
+    <div class="hc-header-inner">
+      <a class="hc-logo" href="/">한채</a>
+      <nav class="hc-nav" aria-label="마을로">
+        <a class="plain" href="/">마을로 돌아가기</a>
+      </nav>
+    </div>
+  </header>
+  <div class="giwa" aria-hidden="true"></div>
+  <div class="dancheong-band" aria-hidden="true"></div>
+
+  <main class="login">
+    <section class="login-card card" aria-labelledby="login-title">
+      <h1 id="login-title" class="login-title">마을에 들어오세요</h1>
+      <p class="login-desc">로그인하면 내 한채를 짓고, 이웃을 맺고, 기록에 공감을 남길 수 있어요.</p>
+
+      <div class="login-tabs" role="tablist" aria-label="로그인 · 가입">
+        <button type="button" role="tab" id="tab-login" data-tab="login" aria-controls="login-form" aria-selected="true">로그인</button>
+        <button type="button" role="tab" id="tab-signup" data-tab="signup" aria-controls="signup-form" aria-selected="false" tabindex="-1">이메일로 가입</button>
+      </div>
+
+      <p class="login-notice" id="signup-done" role="status" hidden>
+        <strong></strong> 로 인증 메일을 보냈어요. 메일의 링크를 눌러 인증한 뒤 로그인해 주세요.
+      </p>
+      <p class="login-notice" id="verified-done" role="status" hidden>이메일 인증을 마쳤어요. 이제 로그인할 수 있어요.</p>
+
+      <form id="login-form" class="login-form" role="tabpanel" aria-labelledby="tab-login" novalidate>
+        <div class="field">
+          <label for="login-email">이메일</label>
+          <input id="login-email" type="email" name="email" autocomplete="email" required>
+        </div>
+        <div class="field">
+          <label for="login-password">비밀번호</label>
+          <input id="login-password" type="password" name="password" autocomplete="current-password" required>
+        </div>
+        <p class="form-error" role="alert"></p>
+        <button type="submit" class="btn btn-primary btn-block form-submit">로그인</button>
+
+        <div class="divider"><span>또는</span></div>
+        <div class="social">
+          <a class="btn btn-secondary social-link" data-provider="kakao" href="/accounts/kakao/login/">카카오로 로그인</a>
+          <a class="btn btn-secondary social-link" data-provider="google" href="/accounts/google/login/">구글로 로그인</a>
+          <a class="btn btn-secondary social-link" data-provider="naver" href="/accounts/naver/login/">네이버로 로그인</a>
+        </div>
+        <p class="login-switch">처음이신가요? <button type="button" class="text-link" data-tab="signup">이메일로 가입하기</button></p>
+      </form>
+
+      <form id="signup-form" class="login-form" role="tabpanel" aria-labelledby="tab-signup" novalidate hidden>
+        <div class="field">
+          <label for="signup-nickname">닉네임 <span class="hint">2~20자</span></label>
+          <input id="signup-nickname" type="text" name="nickname" autocomplete="nickname" minlength="2" maxlength="20" required>
+        </div>
+        <div class="field">
+          <label for="signup-email">이메일</label>
+          <input id="signup-email" type="email" name="email" autocomplete="email" required>
+        </div>
+        <div class="field">
+          <label for="signup-password">비밀번호 <span class="hint">8자 이상</span></label>
+          <input id="signup-password" type="password" name="password" autocomplete="new-password" minlength="8" required>
+        </div>
+        <div class="field">
+          <label for="signup-password-confirm">비밀번호 확인</label>
+          <input id="signup-password-confirm" type="password" name="passwordConfirm" autocomplete="new-password" required>
+        </div>
+        <fieldset class="agrees">
+          <legend class="sr-only">약관 동의</legend>
+          <label class="check"><input type="checkbox" name="agreeTerms"> 이용약관에 동의해요 (필수)</label>
+          <label class="check"><input type="checkbox" name="agreePrivacy"> 개인정보 수집 · 이용에 동의해요 (필수)</label>
+          <label class="check"><input type="checkbox" name="over14"> 만 14세 이상이에요 (필수)</label>
+        </fieldset>
+        <p class="form-error" role="alert"></p>
+        <button type="submit" class="btn btn-primary btn-block form-submit">가입하기</button>
+        <p class="login-switch">이미 회원이신가요? <button type="button" class="text-link" data-tab="login">로그인</button></p>
+      </form>
+    </section>
+  </main>
+
+  <footer class="hc-footer">
+    <div class="dancheong-band" aria-hidden="true"></div>
+    <div class="hc-footer-inner">
+      <span class="hc-footer-logo">한채</span>
+      <span class="hc-footer-sub">한 사람, 한 채, 그 안의 기록</span>
+      <span class="hc-footer-sub">이용약관 · 개인정보처리방침</span>
+    </div>
+  </footer>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/pages/login.js"></script>
+</body>
+</html>
