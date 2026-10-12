@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>한채 · 마당</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gugi&family=Noto+Serif+KR:wght@400;600;700&display=swap">
+  <link rel="stylesheet" href="css/reset.css">
+  <link rel="stylesheet" href="css/hanchae.css">
+  <link rel="stylesheet" href="css/pages/yard.css">
+</head>
+<body>
+  <header class="hc-header">
+    <div class="hc-header-inner">
+      <a class="hc-logo" href="/">한채</a>
+      <form class="hc-search" id="village-search" role="search">
+        <label for="village-q" class="sr-only">마을에서 찾기</label>
+        <input id="village-q" name="q" type="search" placeholder="마을에서 기록과 한채 찾기">
+        <button type="submit" aria-label="찾기">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+        </button>
+      </form>
+      <nav class="hc-nav" id="header-nav" aria-label="내 메뉴"></nav>
+    </div>
+  </header>
+
+  <!-- 대문: yard.js 가 채운다 -->
+  <section class="gate yard-gate" id="gate" aria-label="대문" hidden>
+    <div class="giwa yard-giwa" aria-hidden="true"></div>
+    <div class="dancheong-band" aria-hidden="true"></div>
+    <div class="gate-inner yard-gate-inner">
+      <div class="yard-gate-main">
+        <h1 class="hyeonpan hyeonpan-lg" id="blog-name"></h1>
+        <div class="yard-owner">
+          <div class="owner-avatar" aria-hidden="true"></div>
+          <div class="yard-owner-text">
+            <span class="yard-owner-name" id="owner-name"></span>
+            <span class="yard-owner-intro" id="owner-intro"></span>
+          </div>
+        </div>
+      </div>
+      <div class="yard-gate-side">
+        <span class="yard-stats" id="stats"></span>
+        <div class="gate-actions" id="gate-actions"></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="house" id="house" hidden>
+    <nav class="breadcrumb" id="breadcrumb" aria-label="현재 위치"></nav>
+
+    <div class="house-cols">
+      <main class="house-main yard-main">
+        <div class="section-head">
+          <h2 id="list-title">마당</h2>
+          <span class="sub" id="list-sub">모든 방에서 쌓인 최근 기록</span>
+        </div>
+        <div id="post-list" aria-live="polite"></div>
+        <nav class="pager" id="pager" aria-label="페이지"></nav>
+      </main>
+
+      <aside class="house-side" aria-label="방 안내">
+        <nav class="room-guide" aria-labelledby="room-guide-title">
+          <h2 id="room-guide-title">방 안내</h2>
+          <ul id="room-list"></ul>
+        </nav>
+
+        <form class="yard-search" id="blog-search" role="search">
+          <label for="blog-q">이 한채에서 찾기</label>
+          <div class="hc-search yard-search-box">
+            <input id="blog-q" name="q" type="search" placeholder="제목 · 본문 · 태그">
+            <button type="submit" aria-label="찾기">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+            </button>
+          </div>
+        </form>
+
+        <section class="yard-tags" aria-labelledby="tags-title">
+          <h2 id="tags-title">태그</h2>
+          <div class="tag-list" id="tag-list"></div>
+        </section>
+      </aside>
+    </div>
+  </div>
+
+  <!-- 없는 한채 -->
+  <main class="notice card" id="not-found" hidden>
+    <h1>찾는 한채가 없어요</h1>
+    <p>주소가 바뀌었거나 아직 지어지지 않은 한채예요.</p>
+    <a class="btn btn-primary" href="/">마을로 돌아가기</a>
+  </main>
+
+  <footer class="hc-footer">
+    <div class="dancheong-band" aria-hidden="true"></div>
+    <div class="hc-footer-inner">
+      <span class="hc-footer-logo">한채</span>
+      <span class="hc-footer-sub" id="footer-address">한 사람, 한 채, 그 안의 기록</span>
+    </div>
+  </footer>
+
+  <script src="js/content.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/pages/yard.js"></script>
+</body>
+</html>

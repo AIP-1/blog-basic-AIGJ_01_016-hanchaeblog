@@ -5,4 +5,11 @@ from . import views
 urlpatterns = [
     path("images", views.ImageUploadView.as_view()),
     path("topics", views.TopicListView.as_view()),
+    path("topics/<slug:slug>/posts", views.TopicPostsView.as_view()),
+    path("home/new-posts", views.NewPostsView.as_view()),
+    path("blogs/<str:address>/posts", views.BlogPostsView.as_view()),
+    path("blogs/<str:address>/posts/<int:no>", views.PostDetailView.as_view()),
+    path("blogs/<str:address>/posts/<int:no>/views", views.PostViewCountView.as_view()),
+    path("blogs/<str:address>/categories", views.CategoriesView.as_view()),
+    path("blogs/<str:address>/tags", views.TagsView.as_view()),
 ]

@@ -3,12 +3,13 @@
  * contenteditable 영역 + 툴바 버튼으로 서식을 넣는다.
  *
  * 사용법:
- *   const editor = createEditor(document.getElementById('editor'), document.getElementById('toolbar'));
+ *   const editor = createEditor(document.getElementById('editor'), document.getElementById('toolbar'), {
+ *     uploadImage: async (file) => '올린 사진 주소',   // 사진을 서버에 올리고 주소를 돌려준다
+ *   });
  *   editor.getHTML();          // 본문 HTML 꺼내기
  *   editor.setHTML('<p>..</p>');
  */
-function createEditor(area, toolbar) {
-  const IMAGE_MAX_WIDTH = 1200; // 이미지 저장 용량을 줄이기 위해 이 너비로 줄여서 넣는다
+function createEditor(area, toolbar, options = {}) {
   let savedRange = null;
 
   area.contentEditable = 'true';
@@ -51,7 +52,7 @@ function createEditor(area, toolbar) {
     });
     const block = String(document.queryCommandValue('formatBlock')).toLowerCase().replace(/[<>]/g, '');
     if (blockSelect) {
-      blockSelect.value = ['h2', 'h3', 'h4'].includes(block) ? block : 'p';
+      blockSelect.value = ['h2', 'h3'].includes(block) ? block : 'p';
     }
   }
 
@@ -62,44 +63,42 @@ function createEditor(area, toolbar) {
   }
 
   // ----- 이미지 넣기 -----
-  function resizeImage(file) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onerror = reject;
-      reader.onload = () => {
-        const img = new Image();
-        img.onerror = reject;
-        img.onload = () => {
-          // GIF는 움직임이 사라지지 않도록 그대로 둔다
-          if (file.type === 'image/gif' || img.width <= IMAGE_MAX_WIDTH) {
-            resolve(reader.result);
-            return;
-          }
-          const canvas = document.createElement('canvas');
-          canvas.width = IMAGE_MAX_WIDTH;
-          canvas.height = Math.round(img.height * (IMAGE_MAX_WIDTH / img.width));
-          canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-          resolve(canvas.toDataURL('image/jpeg', 0.85));
-        };
-        img.src = reader.result;
-      };
-      reader.readAsDataURL(file);
-    });
+  const IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/gif', 'image/webp'];
+  const IMAGE_MAX_BYTES = 10 * 1024 * 1024; // 서버 업로드 상한과 같게 (ERD REQ-004)
+
+  async function insertImageFile(file) {
+    if (!IMAGE_TYPES.includes(file.type)) {
+      alert('jpg · png · gif · webp 사진만 넣을 수 있어요.');
+      return;
+    }
+    if (file.size > IMAGE_MAX_BYTES) {
+      alert('10MB 이하 사진만 넣을 수 있어요.');
+      return;
+    }
+    try {
+      const url = await options.uploadImage(file);
+      run('insertImage', url);
+    } catch (e) {
+      alert(e.message || '사진을 올리지 못했어요.');
+    }
   }
 
   const fileInput = document.createElement('input');
   fileInput.type = 'file';
-  fileInput.accept = 'image/png, image/jpeg, image/gif, image/webp';
-  fileInput.addEventListener('change', async () => {
+  fileInput.accept = IMAGE_TYPES.join(', ');
+  fileInput.addEventListener('change', () => {
     const file = fileInput.files[0];
     fileInput.value = '';
-    if (!file) return;
-    try {
-      run('insertImage', await resizeImage(file));
-    } catch (e) {
-      alert('이미지를 불러오지 못했습니다.');
-    }
+    if (file) insertImageFile(file);
   });
+
+  // 정렬 버튼 하나로 왼쪽 → 가운데 → 오른쪽을 돌아가며 바꾼다
+  function cycleAlign() {
+    restoreSelection();
+    const order = ['justifyLeft', 'justifyCenter', 'justifyRight'];
+    const current = order.findIndex((cmd) => document.queryCommandState(cmd));
+    run(order[(current + 1) % order.length]);
+  }
 
   function insertLink() {
     const url = prompt('링크 주소를 입력하세요', 'https://');
@@ -136,6 +135,7 @@ function createEditor(area, toolbar) {
     if (action === 'image') { saveSelection(); fileInput.click(); }
     if (action === 'quote') run('formatBlock', '<blockquote>');
     if (action === 'code') run('formatBlock', '<pre>');
+    if (action === 'align') cycleAlign();
   });
 
   if (blockSelect) {
@@ -187,6 +187,25 @@ function createEditor(area, toolbar) {
     },
     focus() {
       area.focus();
+    },
+    // 커서 자리(없으면 맨 끝)에 사진 넣기
+    insertImageFile(file) {
+      if (!savedRange) {
+        area.focus();
+        const range = document.createRange();
+        range.selectNodeContents(area);
+        range.collapse(false);
+        savedRange = range;
+      }
+      return insertImageFile(file);
+    },
+    // 본문에 들어 있는 사진 주소들
+    getImages() {
+      return Array.from(area.querySelectorAll('img'), (img) => img.getAttribute('src'));
+    },
+    onChange(callback) {
+      area.addEventListener('input', callback);
+      new MutationObserver(callback).observe(area, { childList: true, subtree: true });
     },
   };
 }

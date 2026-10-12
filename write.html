@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>한채 · 글쓰기</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gugi&family=Noto+Serif+KR:wght@400;600;700&display=swap">
+  <link rel="stylesheet" href="css/reset.css">
+  <link rel="stylesheet" href="css/hanchae.css">
+  <link rel="stylesheet" href="css/content.css">
+  <link rel="stylesheet" href="css/pages/write.css">
+</head>
+<body>
+  <form id="write-form" class="write-page" novalidate hidden>
+    <header class="hc-header">
+      <div class="hc-header-inner write-header">
+        <a class="write-back" id="back-link">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
+          <span class="hyeonpan hyeonpan-sm" id="blog-name"></span>
+          <span class="sr-only">마당으로 돌아가기</span>
+        </a>
+        <span class="write-mode" id="write-mode">새 기록 쓰기</span>
+        <div class="write-buttons">
+          <button type="button" class="btn draft-button" disabled>임시저장 (2차)</button>
+          <button type="submit" class="btn btn-primary publish-button" id="publish-button">발행</button>
+        </div>
+      </div>
+    </header>
+    <div class="giwa" aria-hidden="true"></div>
+    <div class="dancheong-band" aria-hidden="true"></div>
+
+    <div class="write-cols">
+      <main class="write-main card">
+        <div class="write-title-box">
+          <label for="title" class="sr-only">제목</label>
+          <input id="title" class="write-title" type="text" maxlength="100" placeholder="제목을 입력하세요" autocomplete="off">
+          <span class="write-counter" id="title-count">0 / 100</span>
+        </div>
+
+        <div id="toolbar" class="write-toolbar" role="toolbar" aria-label="서식">
+          <select data-block aria-label="문단 형식">
+            <option value="p">문단</option>
+            <option value="h2">큰 제목</option>
+            <option value="h3">작은 제목</option>
+          </select>
+          <button type="button" data-command="bold" aria-label="굵게">굵게</button>
+          <button type="button" data-command="italic" aria-label="기울임">기울임</button>
+          <button type="button" data-command="insertUnorderedList" aria-label="목록">목록</button>
+          <button type="button" data-action="quote" aria-label="인용">인용</button>
+          <button type="button" data-action="code" aria-label="코드 블록">코드</button>
+          <button type="button" data-action="link" aria-label="링크">링크</button>
+          <button type="button" data-action="image" aria-label="사진 넣기">사진</button>
+          <button type="button" data-action="align" aria-label="정렬 바꾸기">정렬</button>
+          <label class="write-color">
+            <span>글자색</span>
+            <input type="color" data-color value="#b5352a" aria-label="글자색">
+          </label>
+        </div>
+
+        <div class="write-editor-wrap">
+          <div id="editor" class="post-content write-editor" data-placeholder="이 집에 쌓을 기록을 적어 보세요" aria-label="본문" role="textbox" aria-multiline="true"></div>
+
+          <button type="button" class="dropzone" id="dropzone">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="M21 16l-5-5-8 8"/></svg>
+            <span class="dropzone-main">사진을 여기에 놓거나 눌러서 고르세요</span>
+            <span class="dropzone-sub">jpg · png · gif · webp, 10MB 이하</span>
+          </button>
+        </div>
+      </main>
+
+      <aside class="write-side card" aria-labelledby="settings-title">
+        <div class="giwa giwa-thin" aria-hidden="true"></div>
+        <div class="dancheong-band" aria-hidden="true"></div>
+        <div class="write-side-body">
+          <h2 id="settings-title">발행 설정</h2>
+
+          <div class="setting">
+            <label for="room">방</label>
+            <select id="room" class="select"></select>
+            <button type="button" class="text-link setting-link" id="new-room">+ 새 방 만들기</button>
+          </div>
+
+          <div class="setting">
+            <label for="topic">골목</label>
+            <select id="topic" class="select">
+              <option value="">고르지 않음</option>
+            </select>
+            <span class="setting-hint">고르면 마을의 그 골목에도 보여요</span>
+          </div>
+
+          <div class="setting">
+            <label for="tag-input">태그</label>
+            <div class="tag-box" id="tag-box">
+              <span id="tag-chips" class="tag-chips"></span>
+              <input id="tag-input" type="text" placeholder="입력 후 Enter" autocomplete="off">
+            </div>
+            <span class="setting-hint" id="tag-count">0 / 10개</span>
+          </div>
+
+          <fieldset class="setting">
+            <legend>공개 범위</legend>
+            <label class="radio"><input type="radio" name="visibility" value="PUBLIC" checked> 공개</label>
+            <label class="radio is-disabled"><input type="radio" name="visibility" value="SUBSCRIBERS" disabled> 이웃 공개 (2차)</label>
+            <label class="radio"><input type="radio" name="visibility" value="PRIVATE"> 나만 보기</label>
+          </fieldset>
+
+          <div class="setting">
+            <span class="setting-label" id="thumb-label">대표 이미지</span>
+            <div class="thumb-picker" id="thumb-picker" role="radiogroup" aria-labelledby="thumb-label"></div>
+            <button type="button" class="btn btn-secondary" id="thumb-upload">따로 올리기</button>
+            <span class="setting-hint">고르지 않으면 본문 첫 사진</span>
+          </div>
+
+          <p class="form-error" id="form-error" role="alert"></p>
+        </div>
+      </aside>
+    </div>
+  </form>
+
+  <script src="js/content.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/editor.js"></script>
+  <script src="js/pages/write.js"></script>
+</body>
+</html>

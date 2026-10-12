@@ -1,0 +1,124 @@
+/* ===== 마당 (SCR-06) ===== */
+.yard-giwa {
+  height: 20px;
+}
+
+.yard-gate-inner {
+  padding: 36px 24px 32px;
+  gap: 28px;
+}
+
+.yard-gate-main {
+  flex: 1 1 460px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 18px;
+}
+
+.yard-owner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.yard-owner-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.yard-owner-name {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.yard-owner-intro {
+  font-size: 15px;
+  color: var(--meok-sub);
+}
+
+.yard-gate-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.yard-stats {
+  font-size: 14px;
+  color: var(--meok-sub);
+}
+
+.yard-stats strong {
+  color: var(--meok);
+  font-variant-numeric: tabular-nums;
+}
+
+.yard-gate-side .btn {
+  min-height: 48px;
+  padding: 0 22px;
+}
+
+.yard-main {
+  gap: 8px;
+}
+
+.yard-main .empty {
+  padding: 48px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+/* 이 한채에서 찾기 */
+.yard-search {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.yard-search label {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.yard-search-box {
+  flex: none;
+  max-width: none;
+}
+
+.yard-search-box button {
+  width: var(--touch-target);
+}
+
+.yard-tags {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.yard-tags h2 {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.yard-tags .tag[aria-current="page"] {
+  background: var(--giwa);
+  color: var(--paper);
+}
+
+@media (max-width: 600px) {
+  .yard-gate-inner {
+    padding: 28px 16px 24px;
+  }
+
+  .yard-gate-side {
+    align-items: flex-start;
+  }
+
+  .hyeonpan-lg {
+    font-size: 28px;
+  }
+}

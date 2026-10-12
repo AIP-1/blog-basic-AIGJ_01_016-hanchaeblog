@@ -73,7 +73,8 @@ ROOT_URLCONF = "config.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        # backend/templates 의 파일이 패키지(allauth 등)의 같은 이름 템플릿보다 먼저 쓰인다
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -136,6 +137,8 @@ ACCOUNT_EMAIL_VERIFICATION = "mandatory"
 ACCOUNT_UNIQUE_EMAIL = True
 SOCIALACCOUNT_EMAIL_AUTHENTICATION = True
 SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
+# 인증 메일의 링크를 프론트의 인증 화면(/verify-email)으로
+ACCOUNT_ADAPTER = "apps.accounts.adapter.AccountAdapter"
 
 # allauth 의 EmailAddress 는 조건부 유일 제약을 쓰는데 MySQL 은 이를 지원하지 않는다.
 # 같은 이메일 중복은 users.email 유일 제약과 ACCOUNT_UNIQUE_EMAIL 이 대신 막는다.
@@ -189,6 +192,8 @@ MEDIA_URL = "media/"
 MEDIA_ROOT = Path(env("MEDIA_ROOT", str(BASE_DIR / "media")))
 # 운영에서 올린 이미지를 Django 가 직접 내보낼지. nginx 가 /media/ 를 맡으면 0 으로 둔다.
 SERVE_MEDIA = env("SERVE_MEDIA", "1" if DEBUG else "0") == "1"
+# 화면 파일(index.html · css · js)이 있는 폴더. 기본은 저장소 루트
+FRONTEND_DIR = Path(env("FRONTEND_DIR", str(BASE_DIR.parent)))
 
 # 이미지 업로드 상한 10MB (ERD REQ-004)
 MAX_IMAGE_BYTES = 10 * 1024 * 1024

@@ -1,0 +1,173 @@
+/* ===== 로그인 · 가입 (SCR-05) ===== */
+.login {
+  flex: 1;
+  width: 100%;
+  padding: 48px 24px 72px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 440px;
+  padding: 32px 32px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.login-title {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 400;
+  line-height: 1.3;
+}
+
+.login-desc {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--meok-sub);
+}
+
+/* 가입 · 인증 안내 */
+.login-notice {
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  background: var(--hanji-deep);
+  border-left: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--dancheong-ink);
+}
+
+.login-notice strong {
+  color: var(--meok);
+}
+
+/* 탭: 선택된 탭 아래에 기와색 선 */
+.login-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-bottom: 1px solid var(--line);
+}
+
+.login-tabs button {
+  min-height: var(--touch-target);
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--meok-sub);
+  border-bottom: 3px solid transparent;
+  margin-bottom: -1px;
+}
+
+.login-tabs button[aria-selected="true"] {
+  color: var(--meok);
+  border-bottom-color: var(--giwa);
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field label {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.field .hint {
+  font-weight: 400;
+  color: var(--meok-sub);
+}
+
+.field input {
+  height: var(--touch-target);
+  padding: 0 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-md);
+  background: var(--paper);
+  font-size: 15px;
+}
+
+.agrees {
+  margin: 0;
+  padding: 0;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 36px;
+  font-size: 14px;
+}
+
+.check input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--giwa);
+}
+
+.form-error {
+  min-height: 1.4em;
+  font-size: 14px;
+  color: var(--seal);
+}
+
+.form-submit {
+  min-height: 48px;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--meok-sub);
+}
+
+.divider::before,
+.divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+
+.social {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.social .btn {
+  font-size: 14px;
+}
+
+.login-switch {
+  font-size: 14px;
+  color: var(--meok-sub);
+  text-align: center;
+}
+
+@media (max-width: 600px) {
+  .login {
+    padding: 24px 16px 56px;
+  }
+
+  .login-card {
+    padding: 24px 20px;
+  }
+}

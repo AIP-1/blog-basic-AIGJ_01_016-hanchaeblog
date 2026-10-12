@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>한채 · 이메일 인증</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gugi&family=Noto+Serif+KR:wght@400;600;700&display=swap">
+  <link rel="stylesheet" href="css/reset.css">
+  <link rel="stylesheet" href="css/hanchae.css">
+</head>
+<body>
+  <header class="hc-header">
+    <div class="hc-header-inner">
+      <a class="hc-logo" href="/">한채</a>
+    </div>
+  </header>
+  <div class="giwa" aria-hidden="true"></div>
+  <div class="dancheong-band" aria-hidden="true"></div>
+
+  <main class="notice card" aria-live="polite">
+    <h1 id="verify-title">이메일을 인증하고 있어요</h1>
+    <p id="verify-text">잠시만 기다려 주세요.</p>
+    <a class="btn btn-primary" id="verify-link" href="/login" hidden>로그인하러 가기</a>
+  </main>
+
+  <footer class="hc-footer">
+    <div class="dancheong-band" aria-hidden="true"></div>
+    <div class="hc-footer-inner">
+      <span class="hc-footer-logo">한채</span>
+      <span class="hc-footer-sub">한 사람, 한 채, 그 안의 기록</span>
+    </div>
+  </footer>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    // 인증 메일의 링크(/verify-email?key=...)로 들어오면 서버에 인증을 요청한다
+    (async function () {
+      const key = new URLSearchParams(location.search).get('key') || '';
+      const title = document.getElementById('verify-title');
+      const text = document.getElementById('verify-text');
+      const link = document.getElementById('verify-link');
+      try {
+        if (!key) throw new Error('인증 링크가 잘못됐어요.');
+        await Auth.verifyEmail(key);
+        title.textContent = '이메일 인증을 마쳤어요';
+        text.textContent = '이제 로그인해서 나의 한채를 지어 보세요.';
+        link.href = '/login?verified=1';
+      } catch (err) {
+        title.textContent = '인증하지 못했어요';
+        text.textContent = err.firstMessage || err.message;
+      }
+      link.hidden = false;
+    })();
+  </script>
+</body>
+</html>
