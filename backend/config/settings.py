@@ -20,8 +20,11 @@ def env(name, default=None):
 SECRET_KEY = env("DJANGO_SECRET_KEY")
 DEBUG = env("DJANGO_DEBUG", "0") == "1"
 
-# 서비스 도메인은 아직 미정이다. 정해지면 .env 의 HANCHAE_DOMAIN 에 넣는다(예: hanchae.kr).
+# 서비스 도메인. 배포할 때 받은 도메인을 HANCHAE_DOMAIN 에 넣는다(예: hanchae.java21.net).
 HANCHAE_DOMAIN = env("HANCHAE_DOMAIN", "")
+# nginx 가 https 로 받아 넘겨주면 1. 쿠키를 https 에서만 보내고, CSRF 허용 출처를 https 로 잡는다.
+USE_HTTPS = env("USE_HTTPS", "0") == "1"
+SCHEME = "https" if USE_HTTPS else "http"
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", ".localhost"]
 if HANCHAE_DOMAIN:
     ALLOWED_HOSTS += [HANCHAE_DOMAIN, f".{HANCHAE_DOMAIN}"]
@@ -54,6 +57,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -89,9 +93,9 @@ DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
         "NAME": env("DB_NAME", "hanchae"),
-        "USER": env("DB_USER", "hanchae"),
+        "USER": env("DB_USER") or env("DB_USERNAME", "hanchae"),
         "PASSWORD": env("DB_PASSWORD", ""),
-        "HOST": env("DB_HOST", "127.0.0.1"),
+        "HOST": env("DB_HOST") or env("DB_ADDRESS", "127.0.0.1"),
         "PORT": env("DB_PORT", "3306"),
         "OPTIONS": {
             "charset": "utf8mb4",
@@ -150,8 +154,8 @@ if HANCHAE_DOMAIN:
     # 모든 한채 서브도메인에서 로그인이 이어지게 한다 (API 명세서 2.2)
     SESSION_COOKIE_DOMAIN = f".{HANCHAE_DOMAIN}"
     CSRF_COOKIE_DOMAIN = f".{HANCHAE_DOMAIN}"
-    CSRF_TRUSTED_ORIGINS = [f"https://{HANCHAE_DOMAIN}", f"https://*.{HANCHAE_DOMAIN}"]
-    CORS_ALLOWED_ORIGIN_REGEXES = [rf"^https://([a-z0-9-]+\.)?{HANCHAE_DOMAIN.replace('.', r'\.')}$"]
+    CSRF_TRUSTED_ORIGINS = [f"{SCHEME}://{HANCHAE_DOMAIN}", f"{SCHEME}://*.{HANCHAE_DOMAIN}"]
+    CORS_ALLOWED_ORIGIN_REGEXES = [rf"^{SCHEME}://([a-z0-9-]+\.)?{HANCHAE_DOMAIN.replace('.', r'\.')}$"]
 else:
     CSRF_TRUSTED_ORIGINS = ["http://localhost:5500", "http://127.0.0.1:5500"]
     CORS_ALLOWED_ORIGIN_REGEXES = [r"^http://([a-z0-9-]+\.)?localhost(:\d+)?$", r"^http://127\.0\.0\.1(:\d+)?$"]
@@ -176,10 +180,32 @@ USE_TZ = True
 
 
 STATIC_URL = "static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
+STORAGES = {
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
+}
 MEDIA_URL = "media/"
-MEDIA_ROOT = BASE_DIR / "media"
+MEDIA_ROOT = Path(env("MEDIA_ROOT", str(BASE_DIR / "media")))
+# 운영에서 올린 이미지를 Django 가 직접 내보낼지. nginx 가 /media/ 를 맡으면 0 으로 둔다.
+SERVE_MEDIA = env("SERVE_MEDIA", "1" if DEBUG else "0") == "1"
 
 # 이미지 업로드 상한 10MB (ERD REQ-004)
 MAX_IMAGE_BYTES = 10 * 1024 * 1024
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+
+# 운영 (nginx 뒤에서 gunicorn 으로 돈다)
+USE_X_FORWARDED_HOST = True
+if USE_HTTPS:
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {"console": {"class": "logging.StreamHandler"}},
+    "root": {"handlers": ["console"], "level": "INFO"},
+}

@@ -5,3 +5,4 @@ backend/.env
 backend/media/
 __pycache__/
 *.pyc
+backend/staticfiles/
