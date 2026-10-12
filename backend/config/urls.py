@@ -15,8 +15,13 @@ api_patterns = [
 urlpatterns = [
     path("api/", include(api_patterns)),
     path("django-admin/", admin.site.urls),
-    path("accounts/", include("allauth.urls")),
 ]
+
+# 소셜 로그인(카카오 · 구글 · 네이버)은 제공사 앱 키를 등록한 뒤 SOCIAL_LOGIN=1 로 켠다.
+# 켜기 전에는 allauth 화면(/accounts/...)을 열지 않는다. 열어 두면 버튼이 500 을 내고,
+# allauth 의 기본 가입 · 로그인 화면이 한채의 규칙(약관 동의, 이용 제한 검사)을 건너뛴다.
+if settings.SOCIAL_LOGIN:
+    urlpatterns += [path("accounts/", include("allauth.urls"))]
 
 if settings.SERVE_MEDIA:
     urlpatterns += [re_path(r"^media/(?P<path>.*)$", serve, {"document_root": settings.MEDIA_ROOT})]

@@ -31,7 +31,8 @@ docker run -d \
   hanchae-backend:latest
 
 echo "[4/4] 뜨는지 확인 (API 와 첫 화면)"
-for i in $(seq 1 30); do
+# 첫 배포는 빈 DB 에 테이블을 만드느라(migrate) 오래 걸릴 수 있어 2분까지 기다린다
+for i in $(seq 1 60); do
   if curl -fsS "http://127.0.0.1:$APP_PORT/api/topics" >/dev/null 2>&1 \
     && curl -fsS "http://127.0.0.1:$APP_PORT/" >/dev/null 2>&1; then
     echo "배포 완료: /api/topics 와 / 응답 확인"
@@ -42,6 +43,6 @@ for i in $(seq 1 30); do
   sleep 2
 done
 
-echo "60초 안에 응답이 없어요. 아래 로그를 확인하세요." >&2
+echo "2분 안에 응답이 없어요. 아래 로그를 확인하세요." >&2
 docker logs --tail 80 "$NAME" >&2
 exit 1

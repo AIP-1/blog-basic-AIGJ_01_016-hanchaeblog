@@ -8,9 +8,8 @@ const signupForm = document.getElementById('signup-form');
 const tabs = document.querySelectorAll('.login-tabs [role="tab"]');
 const params = new URLSearchParams(location.search);
 
-// 다른 사이트로 보내지 않도록 같은 사이트 안의 주소(/로 시작)만 받는다
-const nextParam = params.get('next') || '/';
-const next = nextParam.startsWith('/') && !nextParam.startsWith('//') ? nextParam : '/';
+// 다른 사이트로 보내지 않도록 같은 사이트 안의 주소만 받는다 (/\evil.com 같은 것도 브라우저는 다른 사이트로 읽는다)
+const next = safeNext(params.get('next'));
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -39,6 +38,7 @@ document.querySelector('.login-tabs').addEventListener('keydown', (e) => {
 });
 
 // 소셜 로그인은 끝나면 next 로 돌아온다
+document.getElementById('social-login').hidden = !SOCIAL_LOGIN_READY;
 document.querySelectorAll('.social-link').forEach((link) => {
   link.href = `/accounts/${link.dataset.provider}/login/?next=${encodeURIComponent(next)}`;
 });

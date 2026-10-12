@@ -5,8 +5,10 @@
 저장소 루트에는 backend/.env 같은 파일도 있으므로, 화면에 필요한 것만 내보낸다.
 """
 
+import posixpath
+
 from django.conf import settings
-from django.http import Http404
+from django.http import Http404, HttpResponsePermanentRedirect
 from django.views.static import serve
 
 # 루트의 *.html 과 이 폴더들 안의 파일만 내보낸다
@@ -14,7 +16,16 @@ FRONTEND_FOLDERS = {"css", "js", "assets"}
 
 
 def frontend(request, path=""):
-    path = path or "index.html"
+    # css/../backend/.env 처럼 폴더 밖으로 나가는 주소를 막는다. 정리한 뒤의 경로로 다시 검사한다
+    if "\\" in path or ".." in path.split("/"):
+        raise Http404
+    # /login/ 처럼 끝에 / 가 붙으면 /login 으로 보낸다 (화면의 css/… 같은 상대 주소가 어긋나지 않게)
+    if path.endswith("/") and path.strip("/"):
+        query = request.META.get("QUERY_STRING", "")
+        return HttpResponsePermanentRedirect("/" + path.strip("/") + (f"?{query}" if query else ""))
+    path = posixpath.normpath(path).lstrip("/") if path else ""
+    if path in ("", "."):
+        path = "index.html"
     top, _, rest = path.partition("/")
     if rest:
         allowed = top in FRONTEND_FOLDERS

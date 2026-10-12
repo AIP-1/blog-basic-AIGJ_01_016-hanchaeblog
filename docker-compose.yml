@@ -1,0 +1,52 @@
+# 노트북에서 배포와 같은 모습으로 띄워 보기
+#   docker compose up --build      → http://localhost:8000
+#   docker compose logs -f app     → 인증 메일 링크도 여기에 찍힌다 (Gmail 설정이 없을 때)
+#   docker compose down            → 끄기 (DB · 사진은 남는다)
+#   docker compose down -v         → 끄고 DB · 사진까지 지우기 (빈 DB 로 다시 시작)
+#
+# 학교 서버와 같은 것: 배포 이미지(Dockerfile), DEBUG=0, gunicorn, 뜰 때마다 migrate, MySQL 8.0.41(빈 DB에서 시작)
+# 다른 것: DB 가 같은 노트북 안에 있고, 도메인 없이 localhost 로 연다
+services:
+  db:
+    image: mysql:8.0.41
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_0900_ai_ci
+    environment:
+      MYSQL_ROOT_PASSWORD: local-root-only
+      MYSQL_DATABASE: hanchae
+      MYSQL_USER: hanchae
+      MYSQL_PASSWORD: local-only
+    volumes:
+      - db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-plocal-root-only", "--silent"]
+      interval: 3s
+      timeout: 3s
+      retries: 40
+
+  app:
+    build: .
+    image: hanchae-backend:local
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    environment:
+      DJANGO_SECRET_KEY: local-only-not-secret
+      DJANGO_DEBUG: "0"
+      DB_HOST: db
+      DB_PORT: "3306"
+      DB_NAME: hanchae
+      DB_USER: hanchae
+      DB_PASSWORD: local-only
+      SERVE_MEDIA: "1"
+      MEDIA_ROOT: /app/media
+      # 실제 메일을 보내 보려면 아래 두 줄을 채운다 (값은 커밋하지 않는다)
+      EMAIL_HOST_USER: ${EMAIL_HOST_USER:-}
+      EMAIL_HOST_PASSWORD: ${EMAIL_HOST_PASSWORD:-}
+    volumes:
+      - media:/app/media
+
+volumes:
+  db-data:
+  media:

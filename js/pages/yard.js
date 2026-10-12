@@ -11,7 +11,7 @@ const address = params.get('address') || '';
 const filter = {
   category: params.get('category') || undefined,
   tag: params.get('tag') || undefined,
-  q: params.get('q') || undefined,
+  q: (params.get('q') || '').trim() || undefined,
 };
 const page = Number(params.get('page')) || 1;
 const isFiltered = Boolean(filter.category || filter.tag || filter.q);
@@ -45,7 +45,7 @@ function describeFilter(blog, rooms) {
 function renderGate(blog, total) {
   document.title = `${blog.name} · 한채`;
   document.getElementById('blog-name').textContent = blog.name;
-  document.getElementById('owner-name').textContent = blog.owner.nickname;
+  document.getElementById('owner-name').textContent = blog.owner.nickname || '떠난 사람';
   document.getElementById('owner-intro').textContent = blog.description || '';
   document.getElementById('stats').innerHTML = `이웃 <strong id="neighbor-count">${blog.subscriber_count}</strong> · 기록 <strong>${total}</strong>`;
   document.getElementById('footer-address').textContent = `${blog.address}.한채도메인`;
@@ -161,4 +161,4 @@ async function main() {
   document.getElementById('house').hidden = false;
 }
 
-main();
+runPage(main);

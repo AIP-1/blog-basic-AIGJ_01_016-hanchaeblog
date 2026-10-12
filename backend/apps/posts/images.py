@@ -14,21 +14,31 @@ from django.core.files.base import ContentFile
 from PIL import Image as PILImage
 from PIL import ImageOps, UnidentifiedImageError
 
+from .content import media_url
+
 from apps.common.errors import APIError
 
 from .models import Image
 
 FORMATS = {"JPEG": ("image/jpeg", "jpg"), "PNG": ("image/png", "png"), "GIF": ("image/gif", "gif"), "WEBP": ("image/webp", "webp")}
 THUMB_WIDTH = 480
+# 4천만 화소(약 8000x5000)를 넘는 사진은 받지 않는다. 풀면 수백 MB 가 되어 서버 메모리가 모자란다
+MAX_PIXELS = 40_000_000
+PILImage.MAX_IMAGE_PIXELS = MAX_PIXELS
 
 
 def _open(data):
     try:
         probe = PILImage.open(io.BytesIO(data))
         probe.verify()  # 깨졌거나 위장한 파일을 걸러 낸다
-        return PILImage.open(io.BytesIO(data))
+        img = PILImage.open(io.BytesIO(data))
+    except (PILImage.DecompressionBombError, PILImage.DecompressionBombWarning):
+        raise APIError(413, "FILE_TOO_LARGE", "사진이 너무 커요. 가로 · 세로를 줄여서 올려 주세요.")
     except (UnidentifiedImageError, OSError, SyntaxError):
         raise APIError(415, "UNSUPPORTED_FILE", "jpg · png · gif · webp 이미지만 올릴 수 있어요.")
+    if img.width * img.height > MAX_PIXELS:
+        raise APIError(413, "FILE_TOO_LARGE", "사진이 너무 커요. 가로 · 세로를 줄여서 올려 주세요.")
+    return img
 
 
 def save_upload(uploaded_file, uploader):
@@ -58,7 +68,9 @@ def save_upload(uploaded_file, uploader):
         width, height = upright.size
         img = upright
 
-    thumb = img.convert("RGBA") if img.mode in ("P", "LA") else img.copy()
+    # WebP 는 RGB · RGBA 만 저장할 수 있다 (16비트 · 흑백 1비트 PNG 등은 바꿔서)
+    has_alpha = img.mode in ("RGBA", "LA", "PA") or (img.mode == "P" and "transparency" in img.info)
+    thumb = img.convert("RGBA" if has_alpha else "RGB")
     if thumb.width > THUMB_WIDTH:
         thumb.thumbnail((THUMB_WIDTH, THUMB_WIDTH * 20))
     thumb_buffer = io.BytesIO()
@@ -80,8 +92,9 @@ def save_upload(uploaded_file, uploader):
 def image_payload(image, request):
     return {
         "id": image.pk,
-        "url": request.build_absolute_uri(image.file.url),
-        "thumb_url": request.build_absolute_uri(image.thumb_file.url),
+        # 본문에 그대로 들어가므로 호스트 없이 /media/... 로 준다 (도메인 · https 가 바뀌어도 깨지지 않게)
+        "url": media_url(image.file.name),
+        "thumb_url": media_url(image.thumb_file.name),
         "width": image.width,
         "height": image.height,
     }

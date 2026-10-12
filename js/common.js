@@ -21,6 +21,20 @@ const Links = {
   here: () => location.pathname + location.search,
 };
 
+// 같은 사이트 안의 주소면 그 경로를, 아니면 마을('/')을 돌려준다
+function safeNext(value) {
+  if (!value) return '/';
+  try {
+    const url = new URL(value, location.origin);
+    return url.origin === location.origin ? url.pathname + url.search + url.hash : '/';
+  } catch (e) {
+    return '/';
+  }
+}
+
+// 소셜 로그인 버튼을 보일지. 제공사 앱 키를 등록하고 서버의 SOCIAL_LOGIN=1 을 켠 뒤 true 로
+const SOCIAL_LOGIN_READY = false;
+
 // ----- 글자 -----
 function escapeHTML(text) {
   return String(text ?? '').replace(/[&<>"']/g, (ch) => ({
@@ -114,6 +128,32 @@ function bindNeighborButton(button, blog, onCount) {
     } finally {
       button.disabled = false;
     }
+  });
+}
+
+// 다른 화면으로 넘어가는 중에 끊긴 요청은 오류가 아니다
+let leavingPage = false;
+window.addEventListener('beforeunload', () => { leavingPage = true; });
+window.addEventListener('pageshow', () => { leavingPage = false; });
+
+// 화면 시작 함수를 감싸 실패해도 빈 화면으로 멈추지 않게 오류 안내를 보여 준다
+function runPage(main) {
+  main().catch((err) => {
+    if (leavingPage) return;
+    console.error(err);
+    const notice = document.createElement('main');
+    notice.className = 'notice card';
+    notice.innerHTML = `
+      <h1>화면을 불러오지 못했어요</h1>
+      <p>${escapeHTML(err.firstMessage || err.message || '잠시 뒤 다시 시도해 주세요.')}</p>
+      <button type="button" class="btn btn-primary">다시 불러오기</button>`;
+    notice.querySelector('button').addEventListener('click', () => location.reload());
+    // 반쯤 그려진 본문은 숨기고 안내를 그 자리에
+    document.querySelectorAll('body > main, body > .house, body > .village, body > .gate, body > form').forEach((el) => {
+      el.hidden = true;
+    });
+    const footer = document.querySelector('body > footer');
+    document.body.insertBefore(notice, footer);
   });
 }
 
