@@ -1,1 +1,7 @@
 .DS_Store
+# backend (Django)
+backend/.venv/
+backend/.env
+backend/media/
+__pycache__/
+*.pyc
