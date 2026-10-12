@@ -284,4 +284,4 @@ async function main() {
   titleInput.focus();
 }
 
-main();
+runPage(main);

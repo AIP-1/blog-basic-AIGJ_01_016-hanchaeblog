@@ -28,8 +28,14 @@ function isSafeLink(url) {
   return /^(https?:|mailto:)/i.test(url) || !/^[a-z][a-z0-9+.-]*:/i.test(url);
 }
 
+// 우리 서버에 올린 사진(/media/...)만. 다른 사이트 사진은 읽는 사람의 접속 정보를 흘린다
 function isSafeImage(url) {
-  return /^https?:/i.test(url) || /^data:image\/(png|jpe?g|gif|webp);base64,/i.test(url);
+  try {
+    const parsed = new URL(url, location.origin);
+    return parsed.origin === location.origin && parsed.pathname.startsWith('/media/');
+  } catch (e) {
+    return false;
+  }
 }
 
 function cleanAttributes(el, tag) {

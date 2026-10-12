@@ -116,4 +116,4 @@ async function main() {
   addressInput.focus();
 }
 
-main();
+runPage(main);

@@ -22,7 +22,8 @@ DEBUG = env("DJANGO_DEBUG", "0") == "1"
 
 # 서비스 도메인. 배포할 때 받은 도메인을 HANCHAE_DOMAIN 에 넣는다(예: hanchae.java21.net).
 HANCHAE_DOMAIN = env("HANCHAE_DOMAIN", "")
-# nginx 가 https 로 받아 넘겨주면 1. 쿠키를 https 에서만 보내고, CSRF 허용 출처를 https 로 잡는다.
+# 사이트가 https 로 열리면 1. 로그인 · CSRF 쿠키를 https 에서만 보낸다.
+# http 로만 열리는 사이트에 1 을 넣으면 쿠키가 저장되지 않아 로그인이 안 된다.
 USE_HTTPS = env("USE_HTTPS", "0") == "1"
 SCHEME = "https" if USE_HTTPS else "http"
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", ".localhost"]
@@ -137,6 +138,8 @@ ACCOUNT_EMAIL_VERIFICATION = "mandatory"
 ACCOUNT_UNIQUE_EMAIL = True
 SOCIALACCOUNT_EMAIL_AUTHENTICATION = True
 SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
+# 소셜 로그인을 켤지. 제공사 앱 키를 Django 운영 화면의 Social applications 에 등록한 뒤 1 로 (config/urls.py)
+SOCIAL_LOGIN = env("SOCIAL_LOGIN", "0") == "1"
 # 인증 메일의 링크를 프론트의 인증 화면(/verify-email)으로
 ACCOUNT_ADAPTER = "apps.accounts.adapter.AccountAdapter"
 
@@ -169,7 +172,10 @@ if HANCHAE_DOMAIN:
     # 모든 한채 서브도메인에서 로그인이 이어지게 한다 (API 명세서 2.2)
     SESSION_COOKIE_DOMAIN = f".{HANCHAE_DOMAIN}"
     CSRF_COOKIE_DOMAIN = f".{HANCHAE_DOMAIN}"
-    CSRF_TRUSTED_ORIGINS = [f"{SCHEME}://{HANCHAE_DOMAIN}", f"{SCHEME}://*.{HANCHAE_DOMAIN}"]
+    # http · https 둘 다 믿는다. USE_HTTPS 를 실제 접속 방식과 다르게 넣어도 모든 저장 요청이 403 으로 막히지 않게
+    CSRF_TRUSTED_ORIGINS = [
+        f"{scheme}://{host}" for scheme in ("https", "http") for host in (HANCHAE_DOMAIN, f"*.{HANCHAE_DOMAIN}")
+    ]
     CORS_ALLOWED_ORIGIN_REGEXES = [rf"^{SCHEME}://([a-z0-9-]+\.)?{HANCHAE_DOMAIN.replace('.', r'\.')}$"]
 else:
     CSRF_TRUSTED_ORIGINS = ["http://localhost:5500", "http://127.0.0.1:5500"]
@@ -215,8 +221,9 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # 운영 (nginx 뒤에서 gunicorn 으로 돈다)
 USE_X_FORWARDED_HOST = True
+# nginx 가 X-Forwarded-Proto 로 알려 주는 접속 방식을 믿는다 (https 로 들어온 요청을 https 로 알아보게)
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 if USE_HTTPS:
-    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
 

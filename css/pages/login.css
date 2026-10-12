@@ -146,6 +146,12 @@
   background: var(--line);
 }
 
+.social-login {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
 .social {
   display: flex;
   flex-direction: column;

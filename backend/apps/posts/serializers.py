@@ -11,6 +11,8 @@ from rest_framework import serializers
 
 from apps.common.errors import APIError
 
+from .content import media_url
+
 MAX_TAGS = 10
 
 
@@ -130,7 +132,7 @@ def with_counts(queryset):
 
 def thumbnail_url(post, request):
     image = post.cover_image or post.first_image
-    return request.build_absolute_uri(image.thumb_file.url) if image else None
+    return media_url(image.thumb_file.name) if image else None
 
 
 def post_summary(post, request, owner_view=False):

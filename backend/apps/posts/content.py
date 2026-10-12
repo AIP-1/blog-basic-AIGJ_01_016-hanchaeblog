@@ -10,6 +10,7 @@ from urllib.parse import urlparse
 
 import nh3
 from django.conf import settings
+from django.http.request import validate_host
 
 ALLOWED_TAGS = {
     "p", "br", "div", "span", "h2", "h3",
@@ -28,15 +29,27 @@ EXCERPT_LENGTH = 150
 
 
 def _media_path(url):
-    """우리 서버에 올린 파일이면 MEDIA_URL 뒤의 경로(images/2026/10/a.png), 아니면 None."""
-    path = urlparse(url).path
+    """우리 서버에 올린 파일이면 MEDIA_URL 뒤의 경로(images/2026/10/a.png), 아니면 None.
+
+    주소에 호스트가 붙어 있으면 우리 서비스의 호스트(ALLOWED_HOSTS)일 때만 인정한다.
+    경로만 /media/ 로 맞춘 다른 사이트 주소(https://evil.com/media/x.gif)를 막기 위해서다.
+    """
+    parsed = urlparse(url)
+    if parsed.netloc and not validate_host(parsed.hostname or "", settings.ALLOWED_HOSTS):
+        return None
     prefix = "/" + settings.MEDIA_URL.lstrip("/")
-    return path[len(prefix):] if path.startswith(prefix) else None
+    return parsed.path[len(prefix):] if parsed.path.startswith(prefix) else None
+
+
+def media_url(path):
+    """저장 경로 → 화면에 넣는 주소. 호스트 없이 /media/... 로 두어 도메인 · http(s)가 바뀌어도 깨지지 않게 한다."""
+    return "/" + settings.MEDIA_URL.lstrip("/") + path
 
 
 def _filter_attribute(tag, attr, value):
-    if tag == "img" and attr == "src" and _media_path(value) is None:
-        return None
+    if tag == "img" and attr == "src":
+        path = _media_path(value)
+        return media_url(path) if path is not None else None
     return value
 
 

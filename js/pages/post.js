@@ -11,12 +11,17 @@ function nakgwanHTML(nickname) {
   return [...nickname].slice(0, 2).map(escapeHTML).join('<br>');
 }
 
+// 탈퇴한 주인은 닉네임이 없다 (API 명세서 3.1 '떠난 사람')
+function ownerName(blog) {
+  return blog.owner.nickname || '떠난 사람';
+}
+
 function renderGate(blog) {
   const link = document.getElementById('blog-link');
   link.href = Links.yard(blog.address);
   link.textContent = blog.name;
   const meta = document.getElementById('gate-meta');
-  const paintMeta = (count) => { meta.textContent = `${blog.owner.nickname} · 이웃 ${count}`; };
+  const paintMeta = (count) => { meta.textContent = `${ownerName(blog)} · 이웃 ${count}`; };
   paintMeta(blog.subscriber_count);
   document.getElementById('footer-address').textContent = `${blog.address}.한채도메인`;
 
@@ -60,10 +65,10 @@ function renderArticle(post, blog) {
     .map((t) => `<a class="tag" href="${Links.yard(address, { tag: t })}">#${escapeHTML(t)}</a>`)
     .join('');
 
-  document.getElementById('owner-name').textContent = blog.owner.nickname;
+  document.getElementById('owner-name').textContent = ownerName(blog);
   const nakgwan = document.getElementById('nakgwan');
-  nakgwan.innerHTML = nakgwanHTML(blog.owner.nickname);
-  nakgwan.setAttribute('aria-label', `낙관 ${blog.owner.nickname}`);
+  nakgwan.innerHTML = nakgwanHTML(ownerName(blog));
+  nakgwan.setAttribute('aria-label', `낙관 ${ownerName(blog)}`);
 }
 
 function renderLike(liked, count) {
@@ -260,4 +265,4 @@ async function main() {
   document.getElementById('house').hidden = false;
 }
 
-main();
+runPage(main);
