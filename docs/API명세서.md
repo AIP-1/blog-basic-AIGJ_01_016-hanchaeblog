@@ -90,6 +90,8 @@
 | 403 | `EMAIL_NOT_VERIFIED` | 메일 인증 전 |
 | 404 | `NOT_FOUND` | 없거나 볼 수 없음 |
 | 409 | `CONFLICT` | 이미 있음 (주소 · 닉네임 중복, 이미 한채가 있음) |
+| 429 | `TOO_MANY_REQUESTS` | 너무 자주 요청함 (인증 메일 다시 보내기). `detail.retry_after` 초 뒤 가능 |
+| 503 | `MAIL_FAILED` | 인증 메일을 보내지 못함 (가입은 되돌린다) |
 | 413 | `FILE_TOO_LARGE` | 이미지 10MB 초과 |
 | 415 | `UNSUPPORTED_FILE` | jpg · png · gif · webp가 아님 |
 | 422 | `NOT_ALLOWED` | 규칙상 안 되는 동작 (내 글에 공감, 내 한채와 이웃 맺기 등) |
@@ -189,6 +191,7 @@
 | `GET /api/auth/me` | 모두 | 지금 로그인한 사람. 비회원이면 `{ "user": null }` | AUTH-02, AUTH-04 | users, blogs |
 | `POST /api/auth/signup` | 모두 | 이메일 가입. 인증 메일을 보낸다 | AUTH-01 | users, account_emailaddress |
 | `POST /api/auth/email/verify` | 모두 | 메일의 인증 키로 이메일 인증 | AUTH-01 | account_emailaddress |
+| `POST /api/auth/email/resend` | 모두 | 인증 메일 다시 보내기 | AUTH-01 | account_emailaddress, verification_mail_logs |
 | `POST /api/auth/login` | 모두 | 이메일 로그인 | AUTH-01 | users |
 | `GET /accounts/{provider}/login/?next=` | 모두 | 소셜 로그인 시작(화면 이동). `provider`는 `kakao` `google` `naver`. 끝나면 `next`로 돌아온다. 처음이면 자동 가입 | AUTH-01 | socialaccount_socialaccount |
 | `POST /api/auth/logout` | 회원 | 로그아웃 | AUTH-02 | — |
@@ -225,6 +228,8 @@
 ```
 
 규칙: 비밀번호 8자 이상, 닉네임 2~20자 · 중복 불가, 세 동의 값은 모두 `true`여야 한다 (ERD REQ-002). 응답 `201` `{ "email_verification_sent": true }`.
+
+**`POST /api/auth/email/resend`** 요청 `{ "email" }` → `200` `{ "sent": true }`. 없는 주소 · 이미 인증한 주소에도 같은 답을 주고 메일만 보내지 않는다(가입 여부를 이 API 로 알아내지 못하게). 같은 주소는 1분에 한 번이고, 그 안에 또 보내면 `429 TOO_MANY_REQUESTS`(`detail.retry_after` 초). 메일 서버가 실패하면 `503 MAIL_FAILED`.
 
 **`POST /api/auth/login`** 요청 `{ "email", "password" }` → `200` `{ "user": ... }`(`/api/auth/me`와 같은 모양). 실패 `401 LOGIN_FAILED`, 메일 인증 전 `403 EMAIL_NOT_VERIFIED`, 이용 제한 `403 SUSPENDED`.
 
@@ -531,7 +536,7 @@ SCR-04(마을 소식판), SCR-16(댓글 · 방명록 관리)은 2차 화면이�
 
 | 영역 | 개수 | API |
 | --- | --- | --- |
-| AUTH | 9 | csrf, me, signup, email/verify, login, 소셜, logout, nickname-available, PATCH me |
+| AUTH | 10 | csrf, me, signup, email/verify, email/resend, login, 소셜, logout, nickname-available, PATCH me |
 | BLOG | 4 | address-available, POST blogs, GET · PATCH blog |
 | POST | 8 | 목록, 상세, views, 발행, 수정, 삭제, images, topics |
 | CAT · TAG | 6 | 방 목록 · 만들기 · 이름 · 순서 · 없애기, 태그 목록 |

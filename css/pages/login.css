@@ -45,6 +45,35 @@
   color: var(--meok);
 }
 
+/* 인증 메일 다시 보내기 */
+.resend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  font-size: 14px;
+  color: var(--meok-sub);
+}
+
+.resend .text-link {
+  font-size: 14px;
+}
+
+.resend .text-link:disabled {
+  color: var(--meok-sub);
+  cursor: default;
+}
+
+.resend-status {
+  flex-basis: 100%;
+  font-size: 13px;
+  color: var(--dancheong-ink);
+}
+
+.resend-status:empty {
+  display: none;
+}
+
 /* 탭: 선택된 탭 아래에 기와색 선 */
 .login-tabs {
   display: grid;

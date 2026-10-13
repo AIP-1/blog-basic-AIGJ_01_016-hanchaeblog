@@ -173,3 +173,52 @@ class SignupMailTests(APITestCase):
         self.assertEqual(res.json()["error"]["code"], "MAIL_FAILED")
         self.assertFalse(User.objects.filter(email=SIGNUP["email"]).exists())
         self.assertEqual(self.client.post("/api/auth/signup", SIGNUP, format="json").status_code, 201)
+
+
+class EmailResendTests(APITestCase):
+    url = "/api/auth/email/resend"
+
+    def setUp(self):
+        self.client.post("/api/auth/signup", SIGNUP, format="json")
+        mail.outbox.clear()
+
+    def test_resend_then_verify_with_new_link(self):
+        res = self.client.post(self.url, {"email": "MINJU@example.com"}, format="json")  # 대소문자 무시
+        self.assertEqual((res.status_code, res.json()), (200, {"sent": True}))
+        self.assertEqual(len(mail.outbox), 1)
+        key = re.search(r"/verify-email\?key=([^\s]+)", mail.outbox[0].body).group(1)
+        self.assertEqual(self.client.post("/api/auth/email/verify", {"key": key}, format="json").status_code, 200)
+        login = {"email": SIGNUP["email"], "password": SIGNUP["password"]}
+        self.assertEqual(self.client.post("/api/auth/login", login, format="json").status_code, 200)
+
+    def test_once_a_minute(self):
+        self.client.post(self.url, {"email": SIGNUP["email"]}, format="json")
+        res = self.client.post(self.url, {"email": SIGNUP["email"]}, format="json")
+        self.assertEqual(res.status_code, 429)
+        self.assertEqual(res.json()["error"]["code"], "TOO_MANY_REQUESTS")
+        self.assertEqual(len(mail.outbox), 1)
+        # 1분이 지나면 다시 보낼 수 있다
+        from .models import VerificationMailLog
+
+        VerificationMailLog.objects.update(last_sent_at=timezone.now() - timedelta(seconds=61))
+        self.assertEqual(self.client.post(self.url, {"email": SIGNUP["email"]}, format="json").status_code, 200)
+        self.assertEqual(len(mail.outbox), 2)
+
+    def test_unknown_and_verified_get_same_answer_without_mail(self):
+        res = self.client.post(self.url, {"email": "nobody@example.com"}, format="json")
+        self.assertEqual((res.status_code, res.json()), (200, {"sent": True}))
+        EmailAddress.objects.update(verified=True)
+        res = self.client.post(self.url, {"email": SIGNUP["email"]}, format="json")
+        self.assertEqual((res.status_code, res.json()), (200, {"sent": True}))
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_bad_email_is_400(self):
+        self.assertEqual(self.client.post(self.url, {"email": "not-an-email"}, format="json").status_code, 400)
+
+    def test_mail_failure_is_503_and_can_retry_right_away(self):
+        from django.test import override_settings
+
+        with override_settings(EMAIL_BACKEND="apps.accounts.tests.FailingMailBackend"):
+            res = self.client.post(self.url, {"email": SIGNUP["email"]}, format="json")
+        self.assertEqual((res.status_code, res.json()["error"]["code"]), (503, "MAIL_FAILED"))
+        self.assertEqual(self.client.post(self.url, {"email": SIGNUP["email"]}, format="json").status_code, 200)
