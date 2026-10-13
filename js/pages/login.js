@@ -74,8 +74,39 @@ function showVerificationSent(email) {
   const notice = document.getElementById('signup-done');
   notice.querySelector('strong').textContent = email;
   notice.hidden = false;
+  showResend();
   loginForm.elements.password.focus();
 }
+
+// ----- 인증 메일 다시 보내기 -----
+// 로그인 칸에 적힌 이메일로 보낸다. 같은 주소는 1분에 한 번 (서버가 막는다)
+const resendBox = document.getElementById('resend');
+const resendButton = document.getElementById('resend-button');
+const resendStatus = document.getElementById('resend-status');
+
+function showResend() {
+  resendBox.hidden = false;
+}
+
+resendButton.addEventListener('click', async () => {
+  const email = loginForm.elements.email.value.trim();
+  if (!EMAIL_PATTERN.test(email)) {
+    resendStatus.textContent = '위 로그인 칸에 가입한 이메일을 적어 주세요.';
+    loginForm.elements.email.focus();
+    return;
+  }
+  resendButton.disabled = true;
+  resendStatus.textContent = '보내는 중이에요…';
+  try {
+    await Auth.resendVerification(email);
+    resendStatus.textContent = `${email} 로 인증 메일을 다시 보냈어요. 스팸함도 확인해 주세요.`;
+  } catch (err) {
+    resendStatus.textContent = err.firstMessage || err.message;
+  } finally {
+    // 연달아 누르지 않도록 잠시 뒤에 다시 켠다
+    setTimeout(() => { resendButton.disabled = false; }, 3000);
+  }
+});
 
 loginForm.addEventListener('submit', (e) => {
   e.preventDefault();
@@ -84,7 +115,12 @@ loginForm.addEventListener('submit', (e) => {
   if (!EMAIL_PATTERN.test(email.value.trim())) return showError(loginForm, '이메일을 올바르게 입력해 주세요.');
   if (!password.value) return showError(loginForm, '비밀번호를 입력해 주세요.');
 
-  submitWith(loginForm, () => Auth.logIn(email.value, password.value), () => { location.href = next; });
+  submitWith(loginForm, async () => {
+    const result = await Auth.logIn(email.value, password.value);
+    // 메일 인증 전이면 다시 보내기를 함께 보여 준다
+    if (result.code === 'EMAIL_NOT_VERIFIED') showResend();
+    return result;
+  }, () => { location.href = next; });
 });
 
 signupForm.addEventListener('submit', (e) => {
@@ -116,3 +152,5 @@ Auth.currentUser().then((user) => {
 });
 if (params.get('tab') === 'signup') showTab('signup');
 if (params.get('verified') === '1') document.getElementById('verified-done').hidden = false;
+// 인증 링크가 만료돼 넘어온 경우 (verify-email 화면)
+if (params.get('resend') === '1') showResend();

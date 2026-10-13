@@ -2,6 +2,7 @@
 
 import logging
 import smtplib
+from datetime import timedelta
 
 from allauth.account.models import EmailAddress, EmailConfirmationHMAC
 from django.contrib.auth import authenticate, login, logout
@@ -18,10 +19,19 @@ from apps.common.errors import APIError
 from apps.common.permissions import EnforceCsrfMixin, IsMember
 from apps.posts.images import get_own_image
 
-from .models import User
-from .serializers import LoginSerializer, MeUpdateSerializer, NicknameField, SignupSerializer, me_payload
+from .models import User, VerificationMailLog
+from .serializers import (
+    EmailResendSerializer,
+    LoginSerializer,
+    MeUpdateSerializer,
+    NicknameField,
+    SignupSerializer,
+    me_payload,
+)
 
 logger = logging.getLogger(__name__)
+# 같은 주소로 인증 메일을 다시 보낼 수 있는 간격
+RESEND_INTERVAL = timedelta(seconds=60)
 
 
 @method_decorator(ensure_csrf_cookie, name="get")
@@ -89,6 +99,52 @@ class EmailVerifyView(EnforceCsrfMixin, APIView):
                 400, "VALIDATION_ERROR", "인증 링크가 만료됐거나 잘못됐어요.", fields={"key": "메일을 다시 받아 주세요."}
             )
         return Response({"verified": True})
+
+
+class EmailResendView(EnforceCsrfMixin, APIView):
+    """POST /api/auth/email/resend — 인증 메일 다시 보내기.
+
+    같은 주소로는 RESEND_INTERVAL 에 한 번만 보낸다. 없는 주소 · 이미 인증한 주소에도 똑같이 '보냈어요'로
+    답해, 이 API 로 가입 여부를 하나씩 알아내지 못하게 한다.
+    """
+
+    def post(self, request):
+        serializer = EmailResendSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data["email"].strip().lower()
+        now = timezone.now()
+
+        with transaction.atomic():
+            log, created = VerificationMailLog.objects.select_for_update().get_or_create(
+                email=email, defaults={"last_sent_at": now}
+            )
+            if not created:
+                wait = RESEND_INTERVAL - (now - log.last_sent_at)
+                if wait.total_seconds() > 0:
+                    seconds = int(wait.total_seconds()) + 1
+                    raise APIError(
+                        429,
+                        "TOO_MANY_REQUESTS",
+                        f"방금 보냈어요. {seconds}초 뒤에 다시 보낼 수 있어요.",
+                        detail={"retry_after": seconds},
+                    )
+                log.last_sent_at = now
+                log.save(update_fields=["last_sent_at"])
+
+        address = (
+            EmailAddress.objects.select_related("user")
+            .filter(email__iexact=email, verified=False, user__is_active=True)
+            .first()
+        )
+        if address is not None and not EmailAddress.objects.filter(user=address.user, verified=True).exists():
+            try:
+                address.send_confirmation(request, signup=False)
+            except (smtplib.SMTPException, OSError):
+                logger.exception("인증 메일을 다시 보내지 못했어요")
+                # 실패했으면 바로 다시 시도할 수 있게 기록을 되돌린다
+                VerificationMailLog.objects.filter(email=email).update(last_sent_at=now - RESEND_INTERVAL)
+                raise APIError(503, "MAIL_FAILED", "인증 메일을 보내지 못했어요. 잠시 뒤 다시 시도해 주세요.")
+        return Response({"sent": True})
 
 
 class LoginView(EnforceCsrfMixin, APIView):

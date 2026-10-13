@@ -38,6 +38,12 @@
         <strong></strong> 로 인증 메일을 보냈어요. 메일의 링크를 눌러 인증한 뒤 로그인해 주세요.
         메일이 안 보이면 스팸함도 확인해 주세요.
       </p>
+      <!-- 인증 메일 다시 보내기: 가입 직후 · 인증 전 로그인 · 만료된 링크에서 보인다 -->
+      <div class="resend" id="resend" hidden>
+        <span>메일을 받지 못했나요?</span>
+        <button type="button" class="text-link" id="resend-button">인증 메일 다시 보내기</button>
+        <p class="resend-status" id="resend-status" role="status"></p>
+      </div>
       <p class="login-notice" id="verified-done" role="status" hidden>이메일 인증을 마쳤어요. 이제 로그인할 수 있어요.</p>
 
       <form id="login-form" class="login-form" role="tabpanel" aria-labelledby="tab-login" novalidate>

@@ -65,3 +65,21 @@ class User(AbstractBaseUser, PermissionsMixin):
     @property
     def is_service_admin(self):
         return self.role == self.Role.ADMIN
+
+
+class VerificationMailLog(models.Model):
+    """인증 메일을 마지막으로 보낸 시각 (재전송 간격 제한용).
+
+    gunicorn 작업자가 여럿이라 메모리가 아니라 DB 에 둔다. 가입 여부와 상관없이 요청받은 주소마다 남긴다.
+    """
+
+    email = models.EmailField("이메일(소문자)", max_length=254, unique=True)
+    last_sent_at = models.DateTimeField("마지막 요청 시각")
+
+    class Meta:
+        db_table = "verification_mail_logs"
+        verbose_name = "인증 메일 발송 기록"
+        verbose_name_plural = "인증 메일 발송 기록"
+
+    def __str__(self):
+        return self.email

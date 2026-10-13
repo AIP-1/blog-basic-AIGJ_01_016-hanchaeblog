@@ -80,6 +80,12 @@ class SignupSerializer(serializers.Serializer):
         return value
 
 
+class EmailResendSerializer(serializers.Serializer):
+    email = serializers.EmailField(
+        max_length=254, error_messages={"invalid": "이메일 형식을 확인해 주세요.", "required": "이메일을 써 주세요."}
+    )
+
+
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(trim_whitespace=False)

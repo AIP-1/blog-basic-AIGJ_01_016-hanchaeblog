@@ -67,5 +67,10 @@ const Auth = (function () {
     await Api.post('/api/auth/email/verify', { key });
   }
 
-  return { signUp, logIn, logOut, currentUser, refresh, verifyEmail };
+  // 인증 메일 다시 보내기. 실패하면 ApiError (1분 안에 또 보내면 429)
+  async function resendVerification(email) {
+    await Api.post('/api/auth/email/resend', { email });
+  }
+
+  return { signUp, logIn, logOut, currentUser, refresh, verifyEmail, resendVerification };
 })();
