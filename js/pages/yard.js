@@ -56,10 +56,7 @@ function renderGate(blog, total) {
     ? `<a class="btn btn-primary" href="${Links.write()}">글쓰기</a>
        <a class="btn btn-secondary" href="${Links.settings()}">한채 관리</a>`
     : '<button type="button" class="btn" id="neighbor-button"></button>';
-  actions.insertAdjacentHTML('beforeend', '<button type="button" class="btn btn-secondary" id="guestbook-button">방명록</button>');
-  document.getElementById('guestbook-button').addEventListener('click', () => {
-    alert('방명록은 아직 준비 중이에요.');
-  });
+  actions.insertAdjacentHTML('beforeend', `<a class="btn btn-secondary" href="${Links.guestbook(blog.address)}">방명록</a>`);
   if (!blog.is_owner) {
     bindNeighborButton(document.getElementById('neighbor-button'), blog, (count) => {
       document.getElementById('neighbor-count').textContent = count;

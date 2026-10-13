@@ -69,11 +69,7 @@ function renderPager(result) {
     pager.hidden = true;
     return;
   }
-  const link = (p) => Links.managePosts({ visibility, page: p });
-  pager.innerHTML = (result.page > 1 ? `<a href="${link(result.page - 1)}" aria-label="이전 페이지">‹</a>` : '<span class="disabled" aria-hidden="true">‹</span>')
-    + Array.from({ length: result.total_pages }, (_, i) => i + 1)
-      .map((p) => (p === result.page ? `<span aria-current="page">${p}</span>` : `<a href="${link(p)}">${p}</a>`)).join('')
-    + (result.page < result.total_pages ? `<a href="${link(result.page + 1)}" aria-label="다음 페이지">›</a>` : '<span class="disabled" aria-hidden="true">›</span>');
+  pager.innerHTML = pagerHTML(result, (p) => Links.managePosts({ visibility, page: p }));
 }
 
 async function loadRows() {

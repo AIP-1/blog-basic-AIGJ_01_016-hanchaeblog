@@ -585,12 +585,12 @@ SCR-04(마을 소식판), SCR-16(댓글 · 방명록 관리)은 2차 화면이�
 | AUTH (소셜 로그인 설정 제외) | 완료. 소셜은 제공사 앱 키를 받은 뒤 Django 운영 화면의 Social applications 에 등록 |
 | BLOG | 완료 |
 | POST | 완료 |
-| CAT · TAG | 방 목록 · 만들기, 태그 목록 완료. 방 이름 바꾸기 · 순서 · 없애기는 다음 |
-| CMT | 댓글 완료. 방명록은 다음 |
+| CAT · TAG | 완료 |
+| CMT | 완료. 방명록 한 줄에는 남긴 사람의 한채 `author_blog`(`{ address, name }` 또는 `null`)가 더 온다 |
 | SOC | 완료 |
-| SUB | 맺기 · 끊기, 이웃 소식(`/api/me/feed`) 완료. `GET /api/me/subscriptions`는 다음 |
-| HOME | 새 기록, 골목의 기록 완료. 순위 두 개는 매 정각 계산하는 작업과 함께 다음 |
-| SRCH | 다음 |
+| SUB | 완료. `GET /api/me/subscriptions` 항목은 `BlogSummary`에 `post_count`(내가 볼 수 있는 기록 수)가 더 온다 |
+| HOME | 완료. 순위는 정각마다 도는 작업 대신 그 시간의 첫 요청이 직전 정각 기준으로 계산해 저장한다(`backend/apps/rankings/services.py`). 다음 정각까지 같은 값을 주고, 이틀 지난 스냅숏은 지운다 |
+| SRCH | 완료. 기록 정확도는 제목 3 · 태그 2 · 본문 1점을 더한 점수, 같으면 최신순. 한채는 이름에 있으면 먼저, 같으면 이웃 많은 순. `q`는 1~50자 |
 
 ---
 

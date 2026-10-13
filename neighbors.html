@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>한채 · 이웃</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gugi&family=Noto+Serif+KR:wght@400;600;700&display=swap">
+  <link rel="stylesheet" href="css/reset.css">
+  <link rel="stylesheet" href="css/hanchae.css">
+  <link rel="stylesheet" href="css/pages/neighbors.css">
+</head>
+<body>
+  <header class="hc-header">
+    <div class="hc-header-inner">
+      <a class="hc-logo" href="/">한채</a>
+      <form class="hc-search" id="village-search" role="search">
+        <label for="village-q" class="sr-only">마을에서 찾기</label>
+        <input id="village-q" name="q" type="search" placeholder="마을에서 기록과 한채 찾기">
+        <button type="submit" aria-label="찾기">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+        </button>
+      </form>
+      <a class="hc-release" href="/releases">릴리즈</a>
+      <nav class="hc-nav" id="header-nav" aria-label="내 메뉴"></nav>
+    </div>
+  </header>
+  <div class="giwa" aria-hidden="true"></div>
+  <div class="dancheong-band" aria-hidden="true"></div>
+
+  <div class="house" id="house" hidden>
+    <nav class="breadcrumb" aria-label="현재 위치">
+      <a href="/">마을</a><span aria-hidden="true">›</span><span aria-current="page">이웃</span>
+    </nav>
+    <nav class="tabs" aria-label="내 메뉴">
+      <a href="/me">내 정보</a>
+      <a href="/neighbors" aria-current="page">이웃</a>
+    </nav>
+
+    <div class="house-cols">
+      <main class="house-main neighbor-main">
+        <div class="section-head">
+          <h1>이웃 소식</h1>
+          <span class="sub">이웃 한채의 새 기록부터</span>
+        </div>
+        <div id="feed" aria-live="polite"></div>
+      </main>
+
+      <aside class="house-side" aria-labelledby="neighbor-title">
+        <section class="card neighbor-box">
+          <div class="giwa giwa-thin" aria-hidden="true"></div>
+          <div class="dancheong-band" aria-hidden="true"></div>
+          <div class="neighbor-box-body">
+            <div class="neighbor-box-head">
+              <h2 id="neighbor-title">내 이웃</h2>
+              <span id="neighbor-total"></span>
+            </div>
+            <div id="neighbor-list" aria-live="polite"></div>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="hc-footer">
+    <div class="dancheong-band" aria-hidden="true"></div>
+    <div class="hc-footer-inner">
+      <span class="hc-footer-logo">한채</span>
+      <span class="hc-footer-sub">한 사람, 한 채, 그 안의 기록</span>
+    </div>
+  </footer>
+
+  <script src="js/content.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/pages/neighbors.js"></script>
+</body>
+</html>

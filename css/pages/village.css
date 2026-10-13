@@ -498,3 +498,8 @@
 .section-head button.more {
   font-size: 14px;
 }
+
+.rank-basis {
+  margin-left: auto;
+  font-size: 12px;
+}

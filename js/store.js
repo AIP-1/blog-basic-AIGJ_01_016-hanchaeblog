@@ -75,6 +75,10 @@ const Store = (function () {
   // { total_count, rooms: [{ id, name, post_count }], uncategorized_count }
   const getRooms = (address) => Api.get(`${blogUrl(address)}/categories`);
   const addRoom = (address, name) => Api.post(`${blogUrl(address)}/categories`, { name });
+  const renameRoom = (address, id, name) => Api.patch(`${blogUrl(address)}/categories/${id}`, { name });
+  // → { moved_to_uncategorized }
+  const deleteRoom = (address, id) => Api.delete(`${blogUrl(address)}/categories/${id}`);
+  const orderRooms = (address, ids) => Api.put(`${blogUrl(address)}/categories/order`, { ids });
   // [{ name, post_count }]
   const getTags = (address) => Api.get(`${blogUrl(address)}/tags`);
 
@@ -86,6 +90,14 @@ const Store = (function () {
   const newPosts = ({ cursor, limit } = {}) => Api.get(`/api/home/new-posts${query({ cursor, limit })}`);
   const topicPosts = (slug, { cursor, limit } = {}) => Api.get(`/api/topics/${enc(slug)}/posts${query({ cursor, limit })}`);
   const neighborFeed = ({ cursor, limit } = {}) => Api.get(`/api/me/feed${query({ cursor, limit })}`);
+  // 내 이웃 한채 (페이지) — items: BlogSummary + post_count
+  const myNeighbors = ({ page, size } = {}) => Api.get(`/api/me/subscriptions${query({ page, size })}`);
+
+  // ----- 마을에서 찾기 · 순위 -----
+  const searchPosts = ({ q, sort, page }) => Api.get(`/api/search/posts${query({ q, sort, page })}`);
+  const searchBlogs = ({ q, page, size }) => Api.get(`/api/search/blogs${query({ q, page, size })}`);
+  const postRanking = (limit) => Api.get(`/api/rankings/posts${query({ limit })}`);
+  const blogRanking = (limit) => Api.get(`/api/rankings/blogs${query({ limit })}`);
 
   // ----- 기록 하나 -----
   const getPost = (address, no) => orNull(Api.get(postUrl(address, no)));
@@ -108,6 +120,12 @@ const Store = (function () {
   const getComments = (address, no) => Api.get(`${postUrl(address, no)}/comments`);
   const addComment = (address, no, content, clientToken) => Api.post(`${postUrl(address, no)}/comments`, { content, client_token: clientToken });
   const deleteComment = (id) => Api.delete(`/api/comments/${id}`);
+
+  // ----- 방명록 -----
+  const getGuestbook = (address, page) => Api.get(`${blogUrl(address)}/guestbook${query({ page })}`);
+  const addGuestbook = (address, content, clientToken) => Api.post(`${blogUrl(address)}/guestbook`, { content, client_token: clientToken });
+  const editGuestbook = (id, content) => Api.patch(`/api/guestbook/${id}`, { content });
+  const deleteGuestbook = (id) => Api.delete(`/api/guestbook/${id}`);
 
   // ----- 내 정보 -----
   // data: { nickname?, profile_image_id? (null 이면 사진 지우기) } → { user }
@@ -134,11 +152,19 @@ const Store = (function () {
     setNeighbor,
     getRooms,
     addRoom,
+    renameRoom,
+    deleteRoom,
+    orderRooms,
     getTags,
     listPosts,
     newPosts,
     topicPosts,
     neighborFeed,
+    myNeighbors,
+    searchPosts,
+    searchBlogs,
+    postRanking,
+    blogRanking,
     getPost,
     addView,
     savePost,
@@ -147,6 +173,10 @@ const Store = (function () {
     getComments,
     addComment,
     deleteComment,
+    getGuestbook,
+    addGuestbook,
+    editGuestbook,
+    deleteGuestbook,
     uploadImage,
     updateMe,
     nicknameAvailable,

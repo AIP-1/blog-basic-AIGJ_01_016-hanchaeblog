@@ -1199,3 +1199,55 @@ a.tag:hover {
     padding: 24px 20px;
   }
 }
+
+/* 헤더 오른쪽의 나 (방명록) */
+.hc-me {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: var(--touch-target);
+  margin-left: 4px;
+  color: var(--meok);
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.hc-me .avatar {
+  width: 44px;
+  height: 44px;
+  border: 2px solid var(--seal);
+}
+
+/* 마을 목록의 기록 줄: 어느 한채인지 작은 현판으로 (골목 · 찾기 · 이웃 소식) */
+.post-row .row-thumb {
+  width: 120px;
+  height: 84px;
+}
+
+.post-row-meta .hyeonpan-sm {
+  padding: 0 6px;
+  border-width: 1px;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.post-row-meta.with-house {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.list-more {
+  align-self: center;
+  margin-top: 16px;
+  min-height: 48px;
+  padding: 0 28px;
+}
+
+@media (max-width: 600px) {
+  .post-row .row-thumb {
+    width: 100%;
+    height: 160px;
+  }
+}

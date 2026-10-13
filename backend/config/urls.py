@@ -10,6 +10,7 @@ api_patterns = [
     path("", include("apps.blogs.urls")),
     path("", include("apps.posts.urls")),
     path("", include("apps.community.urls")),
+    path("", include("apps.rankings.urls")),
 ]
 
 urlpatterns = [
