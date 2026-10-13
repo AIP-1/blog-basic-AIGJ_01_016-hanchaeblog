@@ -28,3 +28,7 @@ if settings.SERVE_MEDIA:
 
 # 나머지 주소는 화면 파일. 위의 주소(끝 / 를 빠뜨린 경우 포함)는 가리지 않는다
 urlpatterns += [re_path(r"^(?!api/|django-admin|accounts|media/)(?P<path>.*)$", frontend)]
+
+# 없는 주소 · 서버 오류도 한채 모양으로 (DEBUG=0 일 때 쓰인다)
+handler404 = "config.frontend.not_found"
+handler500 = "config.frontend.server_error"

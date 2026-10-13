@@ -707,3 +707,194 @@ a.tag:hover {
   border-radius: 50%;
   background: var(--seal);
 }
+
+/* ===== 닫힌 대문: 오류 화면 (SCR-20) ===== */
+.lost {
+  flex: 1;
+  width: 100%;
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 56px 24px 72px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 48px;
+}
+
+.lost-gate {
+  flex: 0 0 320px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* 기와지붕: 가운데가 솟은 세모 박공 + 양 끝이 살짝 들린 처마 */
+.lost-roof {
+  position: relative;
+  width: 320px;
+  height: 78px;
+}
+
+.lost-roof-peak,
+.lost-roof-eaves {
+  position: absolute;
+  background: repeating-linear-gradient(90deg, var(--giwa) 0 14px, var(--giwa-deep) 14px 16px);
+}
+
+.lost-roof-peak {
+  left: 30px;
+  right: 30px;
+  top: 0;
+  height: 52px;
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+
+.lost-roof-eaves {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 30px;
+  clip-path: polygon(0 0, 100% 0, 96% 100%, 4% 100%);
+}
+
+.lost-roof-tip {
+  position: absolute;
+  bottom: 22px;
+  width: 18px;
+  height: 14px;
+  background: var(--giwa-deep);
+}
+
+.lost-roof-tip-l {
+  left: 0;
+  clip-path: polygon(0 0, 100% 60%, 100% 100%, 20% 100%);
+}
+
+.lost-roof-tip-r {
+  right: 0;
+  clip-path: polygon(100% 0, 0 60%, 0 100%, 80% 100%);
+}
+
+.lost-gate .dancheong-band {
+  width: 300px;
+}
+
+.lost-frame {
+  width: 260px;
+  padding: 16px 16px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--paper);
+  border: 6px solid var(--wood);
+  border-top: none;
+}
+
+/* 대문 위 현판: 마당의 큰 현판과 같은 비율 */
+.lost-code {
+  border-width: 4px;
+  box-shadow: inset 0 0 0 2px var(--ocher);
+  padding: 8px 26px;
+  font-size: 30px;
+  line-height: 1.2;
+  letter-spacing: 1px;
+}
+
+/* 닫힌 나무 대문 두 짝: 세로 판자 결, 가운데 이음매 옆 문고리 */
+.lost-doors {
+  width: 100%;
+  height: 111px;
+  margin-top: 16px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 2px;
+}
+
+.lost-doors span {
+  position: relative;
+  border: 3px solid var(--wood);
+  border-bottom: none;
+  background: repeating-linear-gradient(90deg, #6b3426 0 20px, var(--wood) 20px 22px);
+}
+
+.lost-ring {
+  position: absolute;
+  top: 50%;
+  width: 16px;
+  height: 16px;
+  margin-top: -8px;
+  border: 3px solid var(--line-strong);
+  border-radius: 50%;
+}
+
+.lost-doors span:first-child .lost-ring {
+  right: 8px;
+}
+
+.lost-doors span:last-child .lost-ring {
+  left: 8px;
+}
+
+.lost-step {
+  width: 300px;
+  height: 10px;
+  background: var(--hanji-deep);
+  border: 1px solid var(--line);
+}
+
+.lost-text {
+  flex: 1 1 340px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.lost-eyebrow {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--seal);
+}
+
+.lost-text h1 {
+  font-family: var(--font-display);
+  font-size: 36px;
+  line-height: 1.3;
+  font-weight: 400;
+}
+
+.lost-text p {
+  max-width: 420px;
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--meok-sub);
+}
+
+.lost-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.lost-actions .btn {
+  min-height: 48px;
+  padding: 0 24px;
+}
+
+@media (max-width: 600px) {
+  .lost {
+    padding: 32px 16px 56px;
+    gap: 32px;
+  }
+
+  .lost-gate {
+    flex-basis: auto;
+    transform: scale(0.8);
+    margin: -20px 0;
+  }
+
+  .lost-text h1 {
+    font-size: 30px;
+  }
+}

@@ -23,7 +23,6 @@ function renderGate(blog) {
   const meta = document.getElementById('gate-meta');
   const paintMeta = (count) => { meta.textContent = `${ownerName(blog)} · 이웃 ${count}`; };
   paintMeta(blog.subscriber_count);
-  document.getElementById('footer-address').textContent = `${blog.address}.한채도메인`;
 
   const actions = document.getElementById('gate-actions');
   actions.innerHTML = blog.is_owner
@@ -246,8 +245,7 @@ async function main() {
 
   const [blog, post] = await Promise.all([Store.getBlog(address), Store.getPost(address, no)]);
   if (!blog || !post) {
-    if (blog) document.getElementById('not-found-link').href = Links.yard(address);
-    document.getElementById('not-found').hidden = false;
+    showLost('notFound');
     return;
   }
 

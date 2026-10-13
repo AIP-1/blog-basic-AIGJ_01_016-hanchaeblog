@@ -8,17 +8,44 @@
 import posixpath
 
 from django.conf import settings
-from django.http import Http404, HttpResponsePermanentRedirect
+from django.http import Http404, HttpResponse, HttpResponsePermanentRedirect, JsonResponse
 from django.views.static import serve
 
 # 루트의 *.html 과 이 폴더들 안의 파일만 내보낸다
 FRONTEND_FOLDERS = {"css", "js", "assets"}
 
 
+def page_file(name, status):
+    """화면 파일 하나를 상태 코드와 함께 돌려준다 (404.html · 500.html). 없으면 글자만."""
+    try:
+        body = (settings.FRONTEND_DIR / name).read_bytes()
+    except OSError:
+        body = "찾을 수 없어요." if status == 404 else "잠시 뒤 다시 시도해 주세요."
+    return HttpResponse(body, status=status, content_type="text/html; charset=utf-8")
+
+
+def is_api(request):
+    return request.path.startswith("/api/")
+
+
+def not_found(request, exception=None):
+    """없는 주소: 화면은 닫힌 대문(404.html), API 는 명세서 오류 모양(JSON)."""
+    if is_api(request):
+        return JsonResponse({"error": {"code": "NOT_FOUND", "message": "찾을 수 없어요."}}, status=404, json_dumps_params={"ensure_ascii": False})
+    return page_file("404.html", 404)
+
+
+def server_error(request):
+    """서버 오류: 화면은 500.html, API 는 JSON. 내부 정보는 담지 않는다."""
+    if is_api(request):
+        return JsonResponse({"error": {"code": "SERVER_ERROR", "message": "잠시 후 다시 시도해 주세요."}}, status=500, json_dumps_params={"ensure_ascii": False})
+    return page_file("500.html", 500)
+
+
 def frontend(request, path=""):
     # css/../backend/.env 처럼 폴더 밖으로 나가는 주소를 막는다. 정리한 뒤의 경로로 다시 검사한다
     if "\\" in path or ".." in path.split("/"):
-        raise Http404
+        return not_found(request)
     # /login/ 처럼 끝에 / 가 붙으면 /login 으로 보낸다 (화면의 css/… 같은 상대 주소가 어긋나지 않게)
     if path.endswith("/") and path.strip("/"):
         query = request.META.get("QUERY_STRING", "")
@@ -35,5 +62,8 @@ def frontend(request, path=""):
             path = f"{path}.html"
         allowed = path.endswith(".html")
     if not allowed:
-        raise Http404
-    return serve(request, path, document_root=settings.FRONTEND_DIR)
+        return not_found(request)
+    try:
+        return serve(request, path, document_root=settings.FRONTEND_DIR)
+    except Http404:
+        return not_found(request)

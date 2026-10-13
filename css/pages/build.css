@@ -102,14 +102,6 @@
   outline: none;
 }
 
-.address-suffix {
-  display: flex;
-  align-items: center;
-  padding: 0 14px;
-  background: var(--hanji-deep);
-  color: var(--meok-sub);
-  font-size: 15px;
-}
 
 .address-status {
   display: flex;
@@ -240,10 +232,6 @@
   height: 40px;
 }
 
-.preview-address {
-  font-size: 13px;
-  color: var(--meok-sub);
-}
 
 .preview-yard {
   display: flex;
