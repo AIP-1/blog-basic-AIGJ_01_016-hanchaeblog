@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>한채 · 골목</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gugi&family=Noto+Serif+KR:wght@400;600;700&display=swap">
+  <link rel="stylesheet" href="css/reset.css">
+  <link rel="stylesheet" href="css/hanchae.css">
+  <link rel="stylesheet" href="css/pages/topic.css">
+</head>
+<body>
+  <header class="hc-header">
+    <div class="hc-header-inner">
+      <a class="hc-logo" href="/">한채</a>
+      <form class="hc-search" id="village-search" role="search">
+        <label for="village-q" class="sr-only">마을에서 찾기</label>
+        <input id="village-q" name="q" type="search" placeholder="마을에서 기록과 한채 찾기">
+        <button type="submit" aria-label="찾기">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+        </button>
+      </form>
+      <a class="hc-release" href="/releases">릴리즈</a>
+      <nav class="hc-nav" id="header-nav" aria-label="내 메뉴"></nav>
+    </div>
+  </header>
+  <div class="giwa" aria-hidden="true"></div>
+  <div class="dancheong-band" aria-hidden="true"></div>
+
+  <div class="house" id="house" hidden>
+    <nav class="breadcrumb" id="breadcrumb" aria-label="현재 위치"></nav>
+
+    <section class="topic-head card" aria-labelledby="topic-name">
+      <div class="topic-head-body">
+        <div class="topic-sign">
+          <h1 id="topic-name"></h1>
+          <span class="topic-post" aria-hidden="true"></span>
+        </div>
+        <div class="topic-text">
+          <span class="topic-eyebrow">골목</span>
+          <p id="topic-desc"></p>
+        </div>
+      </div>
+      <div class="topic-wall" aria-hidden="true"></div>
+    </section>
+
+    <nav class="topic-chips" id="topic-chips" aria-label="다른 골목"></nav>
+
+    <div class="house-cols">
+      <main class="house-main topic-main">
+        <div class="section-head">
+          <h2>이 골목의 기록</h2>
+          <span class="sub">새 기록부터</span>
+        </div>
+        <div id="topic-posts" aria-live="polite"></div>
+      </main>
+
+      <aside class="house-side" aria-label="골목 안내">
+        <section class="card topic-seat" aria-labelledby="seat-title">
+          <div class="giwa giwa-thin" aria-hidden="true"></div>
+          <div class="dancheong-band" aria-hidden="true"></div>
+          <div class="topic-seat-body" id="seat"></div>
+        </section>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="hc-footer">
+    <div class="dancheong-band" aria-hidden="true"></div>
+    <div class="hc-footer-inner">
+      <span class="hc-footer-logo">한채</span>
+      <span class="hc-footer-sub">한 사람, 한 채, 그 안의 기록</span>
+    </div>
+  </footer>
+
+  <script src="js/content.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/pages/topic.js"></script>
+</body>
+</html>

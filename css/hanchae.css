@@ -29,6 +29,7 @@
   --dancheong: #2c7a68;    /* 청록: 포커스 */
   --dancheong-ink: #24675a; /* 청록 글자: 링크 */
   --ocher: #c08a2e;        /* 황: 단청 띠에만 */
+  --danger: #8e2a22;       /* 어두운 빨강: 삭제 · 탈퇴 · 허물기 같은 되돌릴 수 없는 동작에만 */
 
   --font-logo: "SuseongHyejeong", "Gugi", serif;
   --font-display: "Gugi", "Noto Serif KR", serif;
@@ -362,6 +363,11 @@ img.thumb-img,
   margin-left: auto;
   display: flex;
   gap: 8px;
+}
+
+.post-gate-meta {
+  font-size: 14px;
+  color: var(--meok-sub);
 }
 
 .owner-avatar {
@@ -896,5 +902,300 @@ a.tag:hover {
 
   .lost-text h1 {
     font-size: 30px;
+  }
+}
+
+/* ===== 프로필 사진 ===== */
+.avatar {
+  display: inline-block;
+  flex: none;
+  border-radius: 50%;
+  background: var(--hanji-deep);
+  object-fit: cover;
+}
+
+/* 위험한 동작 버튼: 어두운 빨강 */
+.btn-danger {
+  background: var(--danger);
+  color: #ffffff;
+}
+
+.btn-danger:hover {
+  background: #74221b;
+}
+
+.btn-danger-outline {
+  border: 1px solid var(--danger);
+  background: transparent;
+  color: var(--danger);
+}
+
+/* ===== 탭 (한채 관리 · 내 정보) ===== */
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  border-bottom: 1px solid var(--line);
+}
+
+.tabs a,
+.tabs .tab-off {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: var(--touch-target);
+  padding: 0 18px;
+  margin-bottom: -1px;
+  border-bottom: 3px solid transparent;
+  color: var(--meok-sub);
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.tabs a:hover {
+  color: var(--meok);
+}
+
+.tabs a[aria-current="page"] {
+  border-bottom-color: var(--giwa);
+  color: var(--meok);
+  font-weight: 700;
+}
+
+.tabs .tab-off {
+  color: var(--line-strong);
+  cursor: default;
+}
+
+.tabs small {
+  padding: 1px 6px;
+  border: 1px dashed var(--line-strong);
+  border-radius: 2px;
+  font-size: 12px;
+}
+
+/* ===== 확인 창 ===== */
+.hc-dialog {
+  width: min(440px, calc(100% - 32px));
+  padding: 22px 24px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-md);
+  background: var(--paper);
+  color: var(--meok);
+  box-shadow: 0 8px 24px rgba(28, 32, 38, 0.12);
+}
+
+.hc-dialog::backdrop {
+  background: rgba(28, 32, 38, 0.35);
+}
+
+.hc-dialog h2 {
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.hc-dialog p {
+  margin-top: 10px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--meok-sub);
+}
+
+.hc-dialog-actions {
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* ===== 설정 양식 (한채 관리 · 내 정보) ===== */
+.form-card {
+  padding: 32px 36px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.form-card-head {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-card-head h1 {
+  font-family: var(--font-display);
+  font-size: 30px;
+  line-height: 1.3;
+  font-weight: 400;
+}
+
+.form-card-head p {
+  font-size: 15px;
+  color: var(--meok-sub);
+}
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.field-group > label,
+.field-label {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.field-group .input {
+  height: 48px;
+  font-size: 16px;
+}
+
+.field-hint {
+  font-size: 13px;
+  color: var(--meok-sub);
+}
+
+.field-count {
+  align-self: flex-end;
+}
+
+.field-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.field-status:empty {
+  display: none;
+}
+
+.field-status.is-ok,
+.saved-mark {
+  color: var(--dancheong-ink);
+}
+
+.field-status.is-bad {
+  color: var(--seal);
+}
+
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+
+.form-actions .btns {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+}
+
+.form-actions .btn {
+  min-height: 48px;
+  padding: 0 24px;
+}
+
+.saved-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.form-error-line {
+  font-size: 14px;
+  color: var(--seal);
+}
+
+/* 사진 바꾸기 줄 */
+.photo-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+}
+
+.photo-row .avatar {
+  width: 72px;
+  height: 72px;
+  border: 2px solid var(--seal);
+}
+
+.photo-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.photo-actions .btns {
+  display: flex;
+  gap: 8px;
+}
+
+.link-button {
+  min-height: var(--touch-target);
+  padding: 0 10px;
+  color: var(--meok-sub);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* 2차 기능 자리 (탈퇴 · 한채 허물기) */
+.later-box {
+  padding: 20px 24px;
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+}
+
+.later-box > div {
+  flex: 1 1 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.later-box h2 {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.later-box h2 small,
+.badge-later {
+  margin-left: 4px;
+  padding: 1px 6px;
+  border: 1px dashed var(--line-strong);
+  border-radius: 2px;
+  color: var(--meok-sub);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.later-box span {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--meok-sub);
+}
+
+.later-box .btn {
+  opacity: 0.5;
+  cursor: default;
+}
+
+@media (max-width: 600px) {
+  .form-card {
+    padding: 24px 20px;
   }
 }

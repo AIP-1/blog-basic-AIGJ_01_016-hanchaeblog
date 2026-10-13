@@ -112,7 +112,13 @@ function bindActions(post) {
   document.getElementById('owner-tools').hidden = false;
   document.getElementById('edit-link').href = Links.write(no);
   document.getElementById('delete-button').addEventListener('click', async () => {
-    if (!confirm('이 기록을 삭제할까요? 댓글과 공감도 함께 사라져요.')) return;
+    const ok = await confirmDialog({
+      title: '이 기록을 삭제할까요?',
+      text: `‘${post.title}’의 댓글과 공감도 함께 사라지고, 되돌릴 수 없어요.`,
+      confirmLabel: '삭제',
+      danger: true,
+    });
+    if (!ok) return;
     try {
       await Store.deletePost(address, no);
       location.href = Links.yard(address);
@@ -147,7 +153,7 @@ function commentHTML(c) {
   const remove = c.can_delete ? `<button type="button" class="comment-delete" data-delete="${c.id}">삭제</button>` : '';
   return `
     <li class="comment">
-      <div class="comment-avatar" aria-hidden="true"></div>
+      ${avatarHTML(c.author.profile_image_url, 'comment-avatar')}
       <div class="comment-body">
         <div class="comment-head">
           ${authorLink}
@@ -167,7 +173,9 @@ async function loadComments() {
 
 document.getElementById('comment-list').addEventListener('click', async (e) => {
   const button = e.target.closest('[data-delete]');
-  if (!button || !confirm('이 댓글을 지울까요?')) return;
+  if (!button) return;
+  const ok = await confirmDialog({ title: '이 댓글을 지울까요?', text: '지운 댓글은 되돌릴 수 없어요.', confirmLabel: '삭제', danger: true });
+  if (!ok) return;
   try {
     await Store.deleteComment(button.dataset.delete);
     await loadComments();

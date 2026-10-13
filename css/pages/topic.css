@@ -1,0 +1,164 @@
+/* ===== 골목 (SCR-03) ===== */
+.topic-head {
+  overflow: hidden;
+}
+
+.topic-head-body {
+  padding: 28px 32px 24px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 24px;
+}
+
+/* 골목 표지판: 결이 보이는 나무판 + 기둥 (한채의 현판과 달리 금박선이 없다) */
+.topic-sign {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.topic-sign h1 {
+  padding: 10px 30px;
+  border-radius: 2px;
+  background: repeating-linear-gradient(180deg, #6b3426 0 14px, var(--wood) 14px 16px);
+  color: var(--paper);
+  font-family: var(--font-display);
+  font-size: 32px;
+  line-height: 1.25;
+  font-weight: 400;
+}
+
+.topic-post {
+  width: 10px;
+  height: 34px;
+  background: var(--wood);
+}
+
+.topic-text {
+  flex: 1 1 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-bottom: 6px;
+}
+
+.topic-eyebrow {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--dancheong-ink);
+}
+
+.topic-text p {
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--meok-sub);
+}
+
+/* 담장 */
+.topic-wall {
+  height: 18px;
+  border-top: 1px solid var(--line);
+  background: repeating-linear-gradient(90deg, var(--hanji-deep) 0 46px, var(--line) 46px 48px);
+}
+
+.topic-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.topic-chips a {
+  display: inline-flex;
+  align-items: center;
+  height: 40px;
+  padding: 0 16px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-md);
+  background: var(--paper);
+  color: var(--meok);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.topic-chips a[aria-current="page"] {
+  border-color: var(--giwa);
+  background: var(--giwa);
+  color: var(--paper);
+}
+
+.topic-main {
+  gap: 8px;
+}
+
+#topic-posts {
+  display: flex;
+  flex-direction: column;
+}
+
+.post-row .topic-thumb {
+  width: 120px;
+  height: 84px;
+}
+
+.post-row-meta .hyeonpan-sm {
+  padding: 0 6px;
+  border-width: 1px;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.post-row-meta.with-house {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.topic-more {
+  align-self: center;
+  margin-top: 16px;
+  min-height: 48px;
+  padding: 0 28px;
+}
+
+.topic-main .empty {
+  padding: 40px 16px;
+}
+
+.topic-seat {
+  overflow: hidden;
+}
+
+.topic-seat-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.topic-seat-body h2 {
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.topic-seat-body p {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--meok-sub);
+}
+
+.topic-seat-body .btn {
+  min-height: 48px;
+}
+
+@media (max-width: 600px) {
+  .topic-head-body {
+    padding: 24px 20px 20px;
+  }
+
+  .post-row .topic-thumb {
+    width: 100%;
+    height: 160px;
+  }
+}

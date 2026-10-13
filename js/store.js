@@ -63,6 +63,9 @@ const Store = (function () {
     return blog;
   }
 
+  // 한채 이름 · 주인 소개 바꾸기 (주인만) → 바뀐 대문 정보
+  const updateBlog = (address, data) => Api.patch(blogUrl(address), data);
+
   // { subscribed, subscriber_count }
   const setNeighbor = (address, on) => (on
     ? Api.put(`${blogUrl(address)}/subscription`)
@@ -106,6 +109,17 @@ const Store = (function () {
   const addComment = (address, no, content, clientToken) => Api.post(`${postUrl(address, no)}/comments`, { content, client_token: clientToken });
   const deleteComment = (id) => Api.delete(`/api/comments/${id}`);
 
+  // ----- 내 정보 -----
+  // data: { nickname?, profile_image_id? (null 이면 사진 지우기) } → { user }
+  async function updateMe(data) {
+    const result = await Api.patch('/api/me', data);
+    await Auth.refresh();
+    return result.user;
+  }
+
+  // { available, reason: null | 'INVALID' | 'TAKEN' }
+  const nicknameAvailable = (nickname) => Api.get(`/api/auth/nickname-available${query({ nickname })}`);
+
   // ----- 사진 -----
   // { id, url, thumb_url, width, height }
   const uploadImage = (file) => Api.upload('/api/images', file);
@@ -116,6 +130,7 @@ const Store = (function () {
     getMyBlog,
     checkAddress,
     createBlog,
+    updateBlog,
     setNeighbor,
     getRooms,
     addRoom,
@@ -133,5 +148,7 @@ const Store = (function () {
     addComment,
     deleteComment,
     uploadImage,
+    updateMe,
+    nicknameAvailable,
   };
 })();

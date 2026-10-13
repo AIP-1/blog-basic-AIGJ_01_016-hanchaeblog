@@ -18,6 +18,13 @@ const Links = {
   },
   post: (address, no) => `/post?address=${encodeURIComponent(address)}&no=${no}`,
   write: (no) => (no ? `/write?no=${no}` : '/write'),
+  me: () => '/me',
+  settings: () => '/settings',
+  managePosts: (filter = {}) => {
+    const params = new URLSearchParams(Object.entries(filter).filter(([, v]) => v !== undefined && v !== null && v !== ''));
+    return params.toString() ? `/manage-posts?${params}` : '/manage-posts';
+  },
+  topic: (slug) => `/topic?slug=${encodeURIComponent(slug)}`,
   here: () => location.pathname + location.search,
 };
 
@@ -135,6 +142,87 @@ async function markNewRelease() {
   } catch (e) {
     // 점을 못 달아도 버튼은 그대로 쓸 수 있다
   }
+}
+
+// ----- 프로필 사진 -----
+// 사진이 있으면 <img>, 없으면 빈 동그라미 (사진은 하나: 내 정보의 프로필 사진이 대문에도 걸린다)
+function avatarHTML(url, className = '') {
+  return url
+    ? `<img class="avatar ${className}" src="${escapeHTML(url)}" alt="">`
+    : `<span class="avatar ${className}" aria-hidden="true"></span>`;
+}
+
+// ----- 한채 관리 (주인) -----
+// 관리 화면 위의 작은 대문
+function ownerGateHTML(blog) {
+  return `
+    <div class="giwa" aria-hidden="true"></div>
+    <div class="dancheong-band" aria-hidden="true"></div>
+    <div class="gate-inner">
+      <a class="hyeonpan" href="${Links.yard(blog.address)}">${escapeHTML(blog.name)}</a>
+      <span class="post-gate-meta">${escapeHTML(blog.owner.nickname || '')} · 이웃 ${blog.subscriber_count}</span>
+      <div class="gate-actions"><a class="btn btn-secondary" href="${Links.yard(blog.address)}">내 마당 보기</a></div>
+    </div>`;
+}
+
+// 관리 탭: 한채 관리 · 기록 관리 · 방 관리 · 댓글 · 방명록
+function manageTabsHTML(current) {
+  const tab = (key, label, href) => (key === current
+    ? `<a href="${href}" aria-current="page">${label}</a>`
+    : `<a href="${href}">${label}</a>`);
+  return `
+    ${tab('settings', '한채 관리', Links.settings())}
+    ${tab('posts', '기록 관리', Links.managePosts())}
+    <span class="tab-off">방 관리 <small>준비 중</small></span>
+    <span class="tab-off">댓글 · 방명록 <small>2차</small></span>`;
+}
+
+// 주인만 들어오는 화면: 로그인 안 했으면 로그인으로, 한채가 없으면 한채 짓기로. 통과하면 { user, blog }
+async function requireOwner() {
+  const user = await Auth.currentUser();
+  if (!user) {
+    location.replace(Links.login(Links.here()));
+    return null;
+  }
+  if (!user.blog_address) {
+    location.replace(Links.build());
+    return null;
+  }
+  const blog = await Store.getBlog(user.blog_address);
+  return { user, blog };
+}
+
+// ----- 확인 창 -----
+// 되돌릴 수 없는 동작 앞에서 묻는다. 확인하면 true (시안 · 기록 관리의 '삭제 확인')
+function confirmDialog({ title, text, confirmLabel = '확인', danger = false }) {
+  return new Promise((resolve) => {
+    const dialog = document.createElement('dialog');
+    dialog.className = 'hc-dialog';
+    dialog.innerHTML = `
+      <h2>${escapeHTML(title)}</h2>
+      <p>${escapeHTML(text)}</p>
+      <div class="hc-dialog-actions">
+        <button type="button" class="btn btn-secondary" value="cancel">취소</button>
+        <button type="button" class="btn ${danger ? 'btn-danger' : 'btn-primary'}" value="ok">${escapeHTML(confirmLabel)}</button>
+      </div>`;
+    const close = (ok) => {
+      dialog.close();
+      dialog.remove();
+      resolve(ok);
+    };
+    dialog.addEventListener('click', (e) => {
+      const button = e.target.closest('button');
+      if (button) close(button.value === 'ok');
+      else if (e.target === dialog) close(false); // 바깥을 누르면 취소
+    });
+    dialog.addEventListener('cancel', (e) => {
+      e.preventDefault();
+      close(false);
+    });
+    document.body.appendChild(dialog);
+    dialog.showModal();
+    dialog.querySelector('[value="cancel"]').focus();
+  });
 }
 
 // ----- 헤더 메뉴 -----

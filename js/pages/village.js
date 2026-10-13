@@ -39,7 +39,7 @@ function renderSeat(user, myBlog) {
     : `<a class="btn btn-primary me-build" href="${Links.build()}">한채 짓기</a>`;
   seat.innerHTML = `
     <div class="me">
-      <div class="me-avatar" aria-hidden="true"></div>
+      ${avatarHTML(user.profile_image_url, 'me-avatar')}
       <div class="me-info">
         <h2>${nickname}</h2>
         ${home}
@@ -47,14 +47,11 @@ function renderSeat(user, myBlog) {
     </div>
     <div class="me-actions">${actions}</div>
     <div class="me-links">
-      <button type="button" id="me-button">내 정보</button>
+      <a class="text-link" href="${Links.me()}">내 정보</a>
       <button type="button" id="logout-button">로그아웃</button>
     </div>`;
   neighbors.hidden = false;
 
-  document.getElementById('me-button').addEventListener('click', () => {
-    alert('내 정보는 아직 준비 중이에요.');
-  });
   document.getElementById('logout-button').addEventListener('click', async () => {
     await Auth.logOut();
     location.reload();
@@ -78,6 +75,8 @@ async function selectTopic(button) {
   topicList.querySelectorAll('button').forEach((b) => {
     b.setAttribute('aria-pressed', String(b === button));
   });
+  // '이 골목 더 보기'는 고른 골목의 화면으로
+  document.getElementById('alley-more').href = Links.topic(button.dataset.slug);
   const { items: posts } = await Store.topicPosts(button.dataset.slug, { limit: 6 });
   alleyPosts.innerHTML = posts.length
     ? posts.map(alleyCardHTML).join('')
@@ -102,9 +101,6 @@ topicList.addEventListener('click', (e) => {
   if (button) selectTopic(button);
 });
 
-document.getElementById('alley-more').addEventListener('click', () => {
-  alert('골목 모아 보기는 아직 준비 중이에요.');
-});
 
 // ----- 이웃 소식 -----
 async function renderNeighborPosts() {

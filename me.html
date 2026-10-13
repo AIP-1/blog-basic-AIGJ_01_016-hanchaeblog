@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>한채 · 내 정보</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gugi&family=Noto+Serif+KR:wght@400;600;700&display=swap">
+  <link rel="stylesheet" href="css/reset.css">
+  <link rel="stylesheet" href="css/hanchae.css">
+  <link rel="stylesheet" href="css/pages/me.css">
+</head>
+<body>
+  <header class="hc-header">
+    <div class="hc-header-inner">
+      <a class="hc-logo" href="/">한채</a>
+      <form class="hc-search" id="village-search" role="search">
+        <label for="village-q" class="sr-only">마을에서 찾기</label>
+        <input id="village-q" name="q" type="search" placeholder="마을에서 기록과 한채 찾기">
+        <button type="submit" aria-label="찾기">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+        </button>
+      </form>
+      <a class="hc-release" href="/releases">릴리즈</a>
+      <nav class="hc-nav" id="header-nav" aria-label="내 메뉴"></nav>
+    </div>
+  </header>
+  <div class="giwa" aria-hidden="true"></div>
+  <div class="dancheong-band" aria-hidden="true"></div>
+
+  <div class="house" id="house" hidden>
+    <nav class="breadcrumb" aria-label="현재 위치">
+      <a href="/">마을</a><span aria-hidden="true">›</span><span aria-current="page">내 정보</span>
+    </nav>
+    <nav class="tabs" aria-label="내 메뉴">
+      <a href="/me" aria-current="page">내 정보</a>
+      <span class="tab-off">이웃 소식 <small>준비 중</small></span>
+    </nav>
+
+    <div class="house-cols">
+      <main class="house-main">
+        <form class="form-card card" id="me-form" novalidate>
+          <div class="form-card-head">
+            <h1>내 정보</h1>
+            <p>마을에서 나를 나타내는 이름과 사진이에요. 댓글 · 이웃 목록과 내 한채 대문에 보여요.</p>
+          </div>
+
+          <div class="field-group">
+            <span class="field-label">프로필 사진</span>
+            <div class="photo-row">
+              <span id="photo"></span>
+              <div class="photo-actions">
+                <div class="btns">
+                  <button type="button" class="btn btn-secondary" id="photo-change">사진 바꾸기</button>
+                  <button type="button" class="link-button" id="photo-remove">지우기</button>
+                </div>
+                <span class="field-hint">jpg · png · gif · webp, 10MB 이하. 내 한채 대문의 주인 사진으로도 쓰여요.</span>
+                <span class="field-status" id="photo-status" role="status"></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="nickname">닉네임</label>
+            <input id="nickname" class="input" type="text" minlength="2" maxlength="20" autocomplete="nickname">
+            <span class="field-status" id="nickname-status" aria-live="polite"></span>
+            <span class="field-hint">2~20자, 다른 사람과 겹칠 수 없어요</span>
+          </div>
+
+          <div class="field-group">
+            <span class="field-label">이메일</span>
+            <div class="email-box">
+              <span id="email"></span>
+              <span class="verified-badge">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg>인증됨
+              </span>
+            </div>
+            <span class="field-hint">로그인할 때 쓰는 이메일은 바꿀 수 없어요.</span>
+          </div>
+
+          <p class="form-error-line" id="form-error" role="alert"></p>
+          <div class="form-actions">
+            <span class="saved-mark" id="saved" role="status" hidden>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg>저장했어요
+            </span>
+            <div class="btns">
+              <a class="btn btn-secondary" href="/">취소</a>
+              <button type="submit" class="btn btn-primary" id="save-button">저장</button>
+            </div>
+          </div>
+        </form>
+
+        <section class="card account-box" aria-labelledby="logout-title">
+          <div>
+            <h2 id="logout-title">로그아웃</h2>
+            <span>이 기기에서 로그아웃해요. 다른 기기의 로그인은 그대로예요.</span>
+          </div>
+          <button type="button" class="btn btn-secondary" id="logout-button">로그아웃</button>
+        </section>
+
+        <section class="later-box" aria-labelledby="leave-title">
+          <div>
+            <h2 id="leave-title">탈퇴 <small>2차</small></h2>
+            <span>탈퇴하면 내 한채와 기록이 함께 사라지고, 남긴 댓글은 '떠난 사람'으로 보여요.</span>
+          </div>
+          <button type="button" class="btn btn-danger-outline" disabled>탈퇴하기</button>
+        </section>
+      </main>
+
+      <aside class="house-side" aria-label="내 한채" id="my-house"></aside>
+    </div>
+  </div>
+
+  <footer class="hc-footer">
+    <div class="dancheong-band" aria-hidden="true"></div>
+    <div class="hc-footer-inner">
+      <span class="hc-footer-logo">한채</span>
+      <span class="hc-footer-sub">한 사람, 한 채, 그 안의 기록</span>
+    </div>
+  </footer>
+
+  <script src="js/content.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/pages/me.js"></script>
+</body>
+</html>

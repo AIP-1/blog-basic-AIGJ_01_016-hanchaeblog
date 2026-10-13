@@ -1,7 +1,7 @@
 /**
  * 글쓰기 (SCR-14)
  * write        새 기록
- * write?no=3   내 한채 3번 기록 고치기
+ * write?no=3   내 한채 3번 기록 수정
  * 로그인하지 않았으면 로그인으로, 한채가 없으면 한채 짓기로 보낸다.
  */
 const form = document.getElementById('write-form');
@@ -256,8 +256,8 @@ async function main() {
       location.replace(Links.write());
       return;
     }
-    document.title = '한채 · 기록 고치기';
-    document.getElementById('write-mode').textContent = '기록 고치기';
+    document.title = '한채 · 기록 수정';
+    document.getElementById('write-mode').textContent = '기록 수정';
     document.getElementById('publish-button').textContent = '고친 내용 발행';
     titleInput.value = post.title;
     editor.setHTML(post.content);

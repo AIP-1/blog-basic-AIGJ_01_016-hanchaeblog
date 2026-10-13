@@ -47,11 +47,14 @@ function renderGate(blog, total) {
   document.getElementById('blog-name').textContent = blog.name;
   document.getElementById('owner-name').textContent = blog.owner.nickname || '떠난 사람';
   document.getElementById('owner-intro').textContent = blog.description || '';
+  document.getElementById('owner-photo').innerHTML = avatarHTML(blog.profile_image_url, 'owner-avatar');
   document.getElementById('stats').innerHTML = `이웃 <strong id="neighbor-count">${blog.subscriber_count}</strong> · 기록 <strong>${total}</strong>`;
 
   const actions = document.getElementById('gate-actions');
+  // 주인에게는 이웃 맺기 대신 '글쓰기 · 한채 관리' (기능명세서 5.4)
   actions.innerHTML = blog.is_owner
-    ? `<a class="btn btn-primary" href="${Links.write()}">글쓰기</a>`
+    ? `<a class="btn btn-primary" href="${Links.write()}">글쓰기</a>
+       <a class="btn btn-secondary" href="${Links.settings()}">한채 관리</a>`
     : '<button type="button" class="btn" id="neighbor-button"></button>';
   actions.insertAdjacentHTML('beforeend', '<button type="button" class="btn btn-secondary" id="guestbook-button">방명록</button>');
   document.getElementById('guestbook-button').addEventListener('click', () => {

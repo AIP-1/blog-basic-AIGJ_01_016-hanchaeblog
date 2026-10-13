@@ -270,7 +270,7 @@
 }
 ```
 
-`post_count`는 보는 사람이 볼 수 있는 기록만 센다. `is_owner`가 `true`면 대문의 버튼이 "이웃 맺기" 대신 "글쓰기 · 한채 관리"가 된다.
+`post_count`는 보는 사람이 볼 수 있는 기록만 센다. `profile_image_url`은 **주인의 프로필 사진**(내 정보에서 바꾼 사진)이다. 사진은 회원마다 하나라, `PATCH /api/blogs/{address}`의 `profile_image_id`는 쓰지 않는다. 올린 파일 주소(`profile_image_url`, 사진 `url`)는 모두 호스트 없는 `/media/...`다. `is_owner`가 `true`면 대문의 버튼이 "이웃 맺기" 대신 "글쓰기 · 한채 관리"가 된다.
 
 ### 4.3 POST 기록 · 이미지 · 골목
 

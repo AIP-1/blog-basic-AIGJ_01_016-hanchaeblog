@@ -136,3 +136,18 @@ class BlogApiTests(APITestCase):
         self.assertEqual((body["post_count"], body["subscriber_count"], body["is_subscribed"]), (2, 1, True))
         self.client.force_authenticate(self.minju)
         self.assertEqual(self.client.get("/api/blogs/minju").json()["post_count"], 3)
+
+
+class BlogPhotoIsOwnerPhotoTests(APITestCase):
+    """사진은 하나: 대문(BlogSummary)의 사진은 주인의 프로필 사진이다."""
+
+    def test_blog_photo_follows_owner_profile(self):
+        from apps.accounts.models import User
+
+        owner = User.objects.create_user("minju@example.com", "password123", nickname="민주")
+        Blog.objects.create(owner=owner, address="minju", name="민주의 한채")
+        self.assertIsNone(self.client.get("/api/blogs/minju").json()["profile_image_url"])
+        owner.profile_image = "images/2026/10/me.png"
+        owner.save()
+        url = self.client.get("/api/blogs/minju").json()["profile_image_url"]
+        self.assertEqual(url, "/media/images/2026/10/me.png")
