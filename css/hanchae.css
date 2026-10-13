@@ -671,3 +671,39 @@ a.tag:hover {
     height: 160px;
   }
 }
+
+/* ===== 헤더의 릴리즈 버튼 ===== */
+.hc-release {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch-target);
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--paper);
+  color: var(--meok);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.hc-release:hover {
+  background: var(--hanji-deep);
+}
+
+.hc-release[aria-current="page"] {
+  border-color: var(--giwa);
+  color: var(--giwa);
+}
+
+/* 아직 보지 않은 새 릴리즈: 주홍 점 */
+.hc-release.has-new::after {
+  content: "";
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--seal);
+}

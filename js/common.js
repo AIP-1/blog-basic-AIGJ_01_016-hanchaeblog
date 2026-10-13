@@ -88,9 +88,59 @@ function thumbHTML(src, className) {
   return `<div class="${className} thumb" aria-hidden="true"></div>`;
 }
 
+// ----- 릴리즈 노트 -----
+// 내용은 assets/releases.json. 맨 앞이 최신이다
+const SEEN_RELEASE_KEY = 'hanchae.seenRelease';
+let releasesPromise = null;
+
+function loadReleases() {
+  if (!releasesPromise) {
+    releasesPromise = fetch('/assets/releases.json', { cache: 'no-cache' })
+      .then((res) => {
+        if (!res.ok) throw new Error('릴리즈 노트를 불러오지 못했어요.');
+        return res.json();
+      })
+      .then((data) => data.releases || []);
+  }
+  return releasesPromise;
+}
+
+// 이 브라우저에서 본 최신 버전 (저장소를 못 쓰면 없는 것으로)
+function seenRelease() {
+  try {
+    return localStorage.getItem(SEEN_RELEASE_KEY);
+  } catch (e) {
+    return null;
+  }
+}
+
+function markReleaseSeen(version) {
+  try {
+    localStorage.setItem(SEEN_RELEASE_KEY, version);
+  } catch (e) {
+    // 저장소를 못 쓰면 다음에도 점이 보일 뿐이다
+  }
+}
+
+// 아직 보지 않은 새 릴리즈가 있으면 헤더의 '릴리즈' 버튼에 점을 단다
+async function markNewRelease() {
+  const button = document.querySelector('.hc-release');
+  if (!button || button.getAttribute('aria-current') === 'page') return;
+  try {
+    const [latest] = await loadReleases();
+    if (latest && latest.version !== seenRelease()) {
+      button.classList.add('has-new');
+      button.setAttribute('aria-label', `릴리즈 (새 소식 v${latest.version})`);
+    }
+  } catch (e) {
+    // 점을 못 달아도 버튼은 그대로 쓸 수 있다
+  }
+}
+
 // ----- 헤더 메뉴 -----
 // 로그인 전: 로그인 / 로그인 뒤: 내 한채(없으면 한채 짓기) · 글쓰기
 async function renderHeaderNav(nav) {
+  markNewRelease();
   const user = await Auth.currentUser();
   if (!user) {
     nav.innerHTML = `<a class="btn btn-secondary" href="${Links.login(Links.here())}">로그인</a>`;

@@ -1,0 +1,122 @@
+/* ===== 릴리즈 노트 (/releases) ===== */
+.releases {
+  flex: 1;
+  width: 100%;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 40px 24px 72px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.releases-head {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--meok);
+}
+
+.releases-head h1 {
+  font-family: var(--font-display);
+  font-size: 32px;
+  font-weight: 400;
+  line-height: 1.3;
+}
+
+.releases-head p {
+  font-size: 15px;
+  color: var(--meok-sub);
+}
+
+#release-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.release {
+  padding: 24px 28px 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.release-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.release-version {
+  padding: 3px 10px;
+  border-radius: 2px;
+  background: var(--giwa);
+  color: var(--paper);
+  font-size: 14px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.release-latest {
+  padding: 2px 8px;
+  border: 1px solid var(--seal);
+  border-radius: 2px;
+  color: var(--seal);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.release-date {
+  margin-left: auto;
+  font-size: 14px;
+  color: var(--meok-sub);
+}
+
+.release-title {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.release-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.release-group h3 {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.release-group ul {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-left: 1.2em;
+  list-style: disc;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.release-new h3 { color: var(--dancheong-ink); }
+.release-improved h3 { color: var(--giwa); }
+.release-fixed h3 { color: var(--wood); }
+.release-known h3 { color: var(--meok-sub); }
+
+@media (max-width: 600px) {
+  .releases {
+    padding: 28px 16px 56px;
+  }
+
+  .release {
+    padding: 20px;
+  }
+
+  .release-date {
+    margin-left: 0;
+  }
+}
