@@ -25,6 +25,16 @@ const Links = {
     return params.toString() ? `/manage-posts?${params}` : '/manage-posts';
   },
   topic: (slug) => `/topic?slug=${encodeURIComponent(slug)}`,
+  rooms: () => '/rooms',
+  neighbors: () => '/neighbors',
+  guestbook: (address, page) => `/guestbook?address=${encodeURIComponent(address)}${page > 1 ? `&page=${page}` : ''}`,
+  search(q, { type, sort, page } = {}) {
+    const params = new URLSearchParams({ q });
+    if (type && type !== 'posts') params.set('type', type);
+    if (sort && sort !== 'relevance') params.set('sort', sort);
+    if (page > 1) params.set('page', page);
+    return `/search?${params}`;
+  },
   here: () => location.pathname + location.search,
 };
 
@@ -144,6 +154,39 @@ async function markNewRelease() {
   }
 }
 
+// ----- 마을 목록의 기록 줄 (골목 · 찾기 · 이웃 소식) -----
+// titleHTML: 제목을 강조해 넘길 때 (이미 이스케이프한 HTML)
+function villagePostRowHTML(p, titleHTML) {
+  return `
+    <a class="post-row" href="${Links.post(p.blog.address, p.no)}">
+      <div class="post-row-text">
+        <span class="post-row-title">${titleHTML || escapeHTML(p.title)}</span>
+        <span class="post-row-excerpt">${escapeHTML(p.excerpt)}</span>
+        <span class="post-row-meta with-house">
+          <span class="hyeonpan hyeonpan-sm">${escapeHTML(p.blog.name)}</span>
+          ${escapeHTML(roomName(p.category))} · ${timeAgo(p.published_at)} · 공감 ${p.like_count}
+        </span>
+      </div>
+      ${thumbHTML(p.thumbnail_url, 'thumb-img row-thumb')}
+    </a>`;
+}
+
+// 페이지 번호 (API 명세서 2.5 의 page 결과). link(p) 는 그 페이지 주소
+function pagerHTML(result, link) {
+  if (result.total_pages <= 1) return '';
+  const pages = Array.from({ length: result.total_pages }, (_, i) => i + 1)
+    .filter((p) => Math.abs(p - result.page) <= 4 || p === 1 || p === result.total_pages);
+  let last = 0;
+  const numbers = pages.map((p) => {
+    const gap = p - last > 1 ? '<span class="disabled" aria-hidden="true">…</span>' : '';
+    last = p;
+    return gap + (p === result.page ? `<span aria-current="page">${p}</span>` : `<a href="${link(p)}">${p}</a>`);
+  }).join('');
+  return (result.page > 1 ? `<a href="${link(result.page - 1)}" aria-label="이전 페이지">‹</a>` : '<span class="disabled" aria-hidden="true">‹</span>')
+    + numbers
+    + (result.page < result.total_pages ? `<a href="${link(result.page + 1)}" aria-label="다음 페이지">›</a>` : '<span class="disabled" aria-hidden="true">›</span>');
+}
+
 // ----- 프로필 사진 -----
 // 사진이 있으면 <img>, 없으면 빈 동그라미 (사진은 하나: 내 정보의 프로필 사진이 대문에도 걸린다)
 function avatarHTML(url, className = '') {
@@ -173,7 +216,7 @@ function manageTabsHTML(current) {
   return `
     ${tab('settings', '한채 관리', Links.settings())}
     ${tab('posts', '기록 관리', Links.managePosts())}
-    <span class="tab-off">방 관리 <small>준비 중</small></span>
+    ${tab('rooms', '방 관리', Links.rooms())}
     <span class="tab-off">댓글 · 방명록 <small>2차</small></span>`;
 }
 
@@ -227,7 +270,8 @@ function confirmDialog({ title, text, confirmLabel = '확인', danger = false })
 
 // ----- 헤더 메뉴 -----
 // 로그인 전: 로그인 / 로그인 뒤: 내 한채(없으면 한채 짓기) · 글쓰기
-async function renderHeaderNav(nav) {
+// showMe: 오른쪽 끝에 지금 로그인한 나(사진 · 닉네임)를 보인다 (방명록 시안)
+async function renderHeaderNav(nav, { showMe = false } = {}) {
   markNewRelease();
   const user = await Auth.currentUser();
   if (!user) {
@@ -238,6 +282,12 @@ async function renderHeaderNav(nav) {
     ? `<a class="plain" href="${Links.yard(user.blog_address)}">내 한채</a>
        <a class="btn btn-primary" href="${Links.write()}">글쓰기</a>`
     : `<a class="btn btn-primary" href="${Links.build()}">한채 짓기</a>`;
+  if (showMe) {
+    nav.insertAdjacentHTML('beforeend', `
+      <a class="hc-me" href="${Links.me()}" aria-label="내 정보: ${escapeHTML(user.nickname)}">
+        ${avatarHTML(user.profile_image_url)}<span>${escapeHTML(user.nickname)}</span>
+      </a>`);
+  }
   return { user };
 }
 
@@ -346,10 +396,17 @@ function runPage(main) {
   });
 }
 
-// 헤더의 마을 검색은 마을에서 찾기(SCR-02)가 생기기 전까지 막아 둔다
+// 헤더의 '마을에서 찾기': 찾기 화면으로 간다. 찾기 화면에서는 지금 낱말을 채워 둔다
 function bindVillageSearch(form) {
+  const input = form.querySelector('input[type="search"]');
+  if (location.pathname === '/search') input.value = new URLSearchParams(location.search).get('q') || '';
   form.addEventListener('submit', (e) => {
     e.preventDefault();
-    alert('마을에서 찾기는 아직 준비 중이에요.');
+    const q = input.value.trim();
+    if (!q) {
+      input.focus();
+      return;
+    }
+    location.href = Links.search(q);
   });
 }

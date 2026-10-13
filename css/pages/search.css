@@ -1,0 +1,189 @@
+/* ===== 마을에서 찾기 (SCR-02) ===== */
+mark {
+  padding: 0 1px;
+  background: #f1e2c2;
+  color: inherit;
+}
+
+.search-head {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.search-head h1 {
+  font-family: var(--font-display);
+  font-size: 30px;
+  line-height: 1.3;
+  font-weight: 400;
+  overflow-wrap: anywhere;
+}
+
+.search-head .sub {
+  font-size: 14px;
+  color: var(--meok-sub);
+}
+
+.tab-count {
+  font-variant-numeric: tabular-nums;
+}
+
+.search-main {
+  gap: 4px;
+}
+
+.sort-chips {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.sort-chips a {
+  display: inline-flex;
+  align-items: center;
+  height: 40px;
+  padding: 0 16px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-md);
+  background: var(--paper);
+  color: var(--meok);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.sort-chips a[aria-current] {
+  border-color: var(--giwa);
+  background: var(--giwa);
+  color: var(--paper);
+}
+
+.search-main .pager {
+  margin-top: 16px;
+}
+
+.search-main .pager:empty {
+  display: none;
+}
+
+/* 한채 결과 */
+.search-blogs {
+  display: flex;
+  flex-direction: column;
+}
+
+.search-blog {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--line);
+  color: var(--meok);
+}
+
+.search-blog .avatar {
+  width: 52px;
+  height: 52px;
+  border: 2px solid var(--seal);
+}
+
+.search-blog-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  min-width: 0;
+}
+
+.search-blog .hyeonpan-sm {
+  font-size: 16px;
+  padding: 2px 10px;
+}
+
+.search-blog-meta {
+  font-size: 14px;
+  color: var(--meok-sub);
+}
+
+.search-blog.is-compact {
+  padding: 0;
+  border-bottom: none;
+  gap: 12px;
+}
+
+.search-blog.is-compact .avatar {
+  width: 40px;
+  height: 40px;
+}
+
+.search-blog.is-compact .hyeonpan-sm {
+  font-size: 14px;
+  padding: 1px 8px;
+}
+
+.search-blog.is-compact .search-blog-meta {
+  font-size: 13px;
+}
+
+/* 옆: 찾은 한채 */
+.search-side-card {
+  overflow: hidden;
+}
+
+.search-side-body {
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.search-side-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.search-side-head h2 {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.search-side-head span {
+  font-size: 12px;
+  color: var(--meok-sub);
+}
+
+.search-side-more {
+  align-self: flex-start;
+  font-size: 14px;
+}
+
+/* 찾은 것이 없을 때 */
+.search-empty {
+  margin-top: 8px;
+  padding: 28px 24px;
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.search-empty strong {
+  font-size: 16px;
+}
+
+.search-empty span {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--meok-sub);
+}
+
+/* 현판(어두운 나무) 위에서는 바탕 대신 황토색 밑줄로 */
+.hyeonpan mark {
+  background: transparent;
+  color: #f1d9a6;
+  text-decoration: underline;
+  text-decoration-color: var(--ocher);
+  text-underline-offset: 3px;
+}

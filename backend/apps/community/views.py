@@ -10,10 +10,11 @@ from apps.accounts.serializers import user_summary
 from apps.common.access import get_visible_blog_or_404, visible_blogs, visible_posts
 from apps.common.errors import APIError
 from apps.common.permissions import IsMember
-from apps.posts.serializers import cursor_page, post_summary, with_counts
+from apps.blogs.serializers import blog_summary
+from apps.posts.serializers import cursor_page, paginate, post_summary, with_counts
 from apps.posts.views import visible_post_or_404
 
-from .models import Comment, PostLike, Subscription
+from .models import Comment, GuestbookEntry, PostLike, Subscription
 
 
 class CommentWriteSerializer(serializers.Serializer):
@@ -27,6 +28,18 @@ class CommentWriteSerializer(serializers.Serializer):
         },
     )
     client_token = serializers.CharField(max_length=36, required=False, allow_null=True)
+
+
+class GuestbookWriteSerializer(CommentWriteSerializer):
+    content = serializers.CharField(
+        max_length=1000,
+        trim_whitespace=True,
+        error_messages={
+            "blank": "한마디를 써 주세요.",
+            "required": "한마디를 써 주세요.",
+            "max_length": "방명록은 1,000자까지 쓸 수 있어요.",
+        },
+    )
 
 
 def comment_payload(comment, request, blog_owner_id):
@@ -45,6 +58,18 @@ def comment_payload(comment, request, blog_owner_id):
     }
     if comment.hidden_at:
         data.update({"content": None, "hidden": True, "can_edit": False})
+    return data
+
+
+def guestbook_payload(entry, request, blog_owner_id):
+    """방명록 한 줄: Comment 모양에 남긴 사람의 한채(현판 이름)를 더한다."""
+    data = comment_payload(entry, request, blog_owner_id)
+    house = None
+    if entry.author.is_active:
+        blog = visible_blogs(entry.author.blogs.all()).only("address", "name").first()
+        if blog:
+            house = {"address": blog.address, "name": blog.name}
+    data["author_blog"] = house
     return data
 
 
@@ -183,3 +208,85 @@ class FeedView(APIView):
         blogs = visible_blogs().filter(subscriptions__subscriber=request.user)
         qs = with_counts(visible_posts(request.user).filter(blog__in=blogs))
         return Response(cursor_page(qs, request, lambda p: post_summary(p, request)))
+
+
+class GuestbookView(APIView):
+    """GET · POST /api/blogs/{address}/guestbook — 방명록 보기(최신순, 페이지) · 남기기 (CMT-04)."""
+
+    def get(self, request, address):
+        blog = get_visible_blog_or_404(address, request.user)
+        entries = GuestbookEntry.objects.filter(blog=blog).select_related("author").order_by("-created_at", "-id")
+        return Response(paginate(entries, request, lambda e: guestbook_payload(e, request, blog.owner_id)))
+
+    def post(self, request, address):
+        if not request.user.is_authenticated:
+            raise APIError(401, "AUTH_REQUIRED", "로그인하면 방명록을 남길 수 있어요.")
+        blog = get_visible_blog_or_404(address, request.user)
+        serializer = GuestbookWriteSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+        token = data.get("client_token") or None
+        if token:
+            existing = GuestbookEntry.objects.filter(author=request.user, client_token=token).first()
+            if existing:
+                return Response(guestbook_payload(existing, request, blog.owner_id))
+        try:
+            with transaction.atomic():
+                entry = GuestbookEntry.objects.create(blog=blog, author=request.user, content=data["content"], client_token=token)
+        except IntegrityError:
+            existing = GuestbookEntry.objects.filter(author=request.user, client_token=token).first()
+            if existing is None:
+                raise
+            return Response(guestbook_payload(existing, request, blog.owner_id))
+        return Response(guestbook_payload(entry, request, blog.owner_id), status=status.HTTP_201_CREATED)
+
+
+class GuestbookDetailView(APIView):
+    """PATCH · DELETE /api/guestbook/{id} — 고치기는 쓴 사람만, 지우기는 쓴 사람 · 한채 주인 (CMT-04)."""
+
+    permission_classes = [IsMember]
+
+    def find(self, request, entry_id):
+        entry = GuestbookEntry.objects.select_related("blog", "author").filter(pk=entry_id).first()
+        if entry is None:
+            raise APIError(404, "NOT_FOUND", "찾는 방명록이 없어요.")
+        get_visible_blog_or_404(entry.blog.address, request.user)  # 볼 수 없는 한채면 404
+        return entry
+
+    def patch(self, request, entry_id):
+        entry = self.find(request, entry_id)
+        if entry.author_id != request.user.pk or entry.hidden_at:
+            raise APIError(403, "FORBIDDEN", "내가 남긴 방명록만 고칠 수 있어요.")
+        serializer = GuestbookWriteSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        entry.content = serializer.validated_data["content"]
+        entry.edited_at = timezone.now()
+        entry.save(update_fields=["content", "edited_at", "updated_at"])
+        return Response(guestbook_payload(entry, request, entry.blog.owner_id))
+
+    def delete(self, request, entry_id):
+        entry = self.find(request, entry_id)
+        if request.user.pk not in (entry.author_id, entry.blog.owner_id):
+            raise APIError(403, "FORBIDDEN", "내 방명록이나 내 한채의 방명록만 지울 수 있어요.")
+        entry.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class MySubscriptionsView(APIView):
+    """GET /api/me/subscriptions — 내 이웃 한채, 이웃 맺은 최신순 페이지 (SUB-01)."""
+
+    permission_classes = [IsMember]
+
+    def get(self, request):
+        subs = (
+            Subscription.objects.filter(subscriber=request.user, blog__in=visible_blogs())
+            .select_related("blog__owner")
+            .order_by("-created_at", "-id")
+        )
+
+        def item(sub):
+            data = blog_summary(sub.blog, request)
+            data["post_count"] = visible_posts(request.user).filter(blog=sub.blog).count()
+            return data
+
+        return Response(paginate(subs, request, item))

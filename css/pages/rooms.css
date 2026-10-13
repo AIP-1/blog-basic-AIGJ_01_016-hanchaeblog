@@ -1,0 +1,194 @@
+/* ===== 방 관리 (SCR-17) ===== */
+.form-card {
+  gap: 22px;
+}
+
+.room-add {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.room-add .input {
+  flex: 1 1 240px;
+  height: 48px;
+  font-size: 16px;
+}
+
+.room-add .btn {
+  min-height: 48px;
+  padding: 0 24px;
+}
+
+.room-add .form-error-line {
+  flex-basis: 100%;
+}
+
+.room-add .form-error-line:empty,
+.room-edit .form-error-line:empty {
+  display: none;
+}
+
+.room-list {
+  border-top: 2px solid var(--meok);
+}
+
+.room-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+/* ▲▼: 휴대폰 · 키보드로도 쉽게 */
+.room-order {
+  display: inline-flex;
+  flex-direction: column;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.room-order button {
+  width: 40px;
+  height: 24px;
+  background: var(--paper);
+  color: var(--meok);
+  font-size: 11px;
+}
+
+.room-order button + button {
+  border-top: 1px solid var(--line-strong);
+}
+
+.room-order button:hover:not(:disabled) {
+  background: var(--hanji);
+}
+
+.room-order button:disabled {
+  color: var(--line);
+  cursor: default;
+}
+
+.room-name {
+  flex: 1 1 200px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.room-name strong {
+  font-size: 16px;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+.room-name span {
+  font-size: 13px;
+  color: var(--meok-sub);
+  font-variant-numeric: tabular-nums;
+}
+
+.room-tools {
+  display: flex;
+  gap: 12px;
+  font-size: 14px;
+}
+
+.room-tools .delete {
+  color: var(--danger);
+  font-weight: 500;
+}
+
+.room-edit {
+  flex: 1 1 300px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.room-edit .input {
+  flex: 1 1 200px;
+  height: 44px;
+  border: 2px solid var(--dancheong);
+  font-size: 16px;
+}
+
+.room-edit .form-error-line {
+  flex-basis: 100%;
+}
+
+.room-maru {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--meok-sub);
+}
+
+.room-maru-dot {
+  flex: none;
+  width: 42px;
+  text-align: center;
+}
+
+.room-maru strong {
+  color: var(--meok);
+  font-weight: 500;
+}
+
+/* 옆: 마당의 방 안내 미리보기 */
+.preview-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.preview-head h2 {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.preview-head span {
+  font-size: 13px;
+  color: var(--meok-sub);
+}
+
+.room-preview {
+  overflow: hidden;
+}
+
+.room-preview ul {
+  padding: 10px 20px 14px;
+}
+
+.room-preview li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  font-size: 15px;
+}
+
+.room-preview li span:last-child {
+  color: var(--meok-sub);
+  font-variant-numeric: tabular-nums;
+}
+
+.room-preview li.is-total {
+  border-bottom: 1px solid var(--line);
+  font-weight: 700;
+}
+
+.room-preview li.is-total span:last-child {
+  color: var(--meok);
+}
+
+.room-preview li.is-maru {
+  color: var(--meok-sub);
+}

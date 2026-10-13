@@ -1,0 +1,129 @@
+/* ===== 이웃 (SCR-12) ===== */
+.neighbor-main {
+  gap: 8px;
+}
+
+.neighbor-main .section-head h1 {
+  font-family: var(--font-display);
+  font-size: 28px;
+  line-height: 1.3;
+  font-weight: 400;
+}
+
+#feed {
+  display: flex;
+  flex-direction: column;
+}
+
+#feed .empty {
+  padding: 40px 16px;
+}
+
+.neighbor-box {
+  overflow: hidden;
+}
+
+.neighbor-box-body {
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.neighbor-box-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.neighbor-box-head h2 {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.neighbor-box-head span {
+  font-size: 13px;
+  color: var(--meok-sub);
+  font-variant-numeric: tabular-nums;
+}
+
+#neighbor-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.neighbor-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+}
+
+.neighbor-row .avatar {
+  width: 36px;
+  height: 36px;
+  border: 2px solid var(--seal);
+}
+
+.neighbor-row-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  color: var(--meok);
+}
+
+.neighbor-row-text:hover .neighbor-row-name {
+  text-decoration: underline;
+}
+
+.neighbor-row-name {
+  font-size: 15px;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+.neighbor-row-meta {
+  font-size: 12px;
+  color: var(--meok-sub);
+}
+
+.neighbor-cut {
+  flex: none;
+  min-height: 36px;
+  padding: 0 12px;
+  font-size: 13px;
+}
+
+/* 끊은 이웃은 흐리게, '다시 맺기'로 되돌릴 수 있다 */
+.neighbor-row.is-cut .avatar,
+.neighbor-row.is-cut .neighbor-row-text {
+  opacity: 0.45;
+}
+
+.neighbor-more {
+  align-self: center;
+  padding-top: 8px;
+  font-size: 14px;
+}
+
+.neighbor-empty {
+  padding-top: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.neighbor-empty strong {
+  font-size: 15px;
+}
+
+.neighbor-empty span {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--meok-sub);
+}

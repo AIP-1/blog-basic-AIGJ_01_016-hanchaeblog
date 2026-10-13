@@ -6,7 +6,7 @@ from datetime import timedelta
 
 from django.conf import settings
 from django.db import IntegrityError, transaction
-from django.db.models import Count, F, Q
+from django.db.models import Case, Count, Exists, F, IntegerField, OuterRef, Q, Value, When
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.response import Response
@@ -18,7 +18,7 @@ from apps.common.permissions import IsMember
 
 from . import writing
 from .images import image_payload, save_upload
-from .models import Category, Post, PostView, Tag, Topic
+from .models import Category, Post, PostTag, PostView, Tag, Topic
 from .serializers import (
     CategoryCreateSerializer,
     PostWriteSerializer,
@@ -249,6 +249,57 @@ class CategoriesView(APIView):
         return Response({"id": category.pk, "name": category.name, "post_count": 0}, status=status.HTTP_201_CREATED)
 
 
+class CategoryDetailView(APIView):
+    """PATCH · DELETE /api/blogs/{address}/categories/{id} — 방 이름 바꾸기 · 없애기 (CAT-01).
+    없앤 방의 기록은 지우지 않고 마루(category NULL)로 옮긴다."""
+
+    def target(self, request, address, category_id):
+        blog = owned_blog(address, request.user)
+        category = Category.objects.filter(blog=blog, pk=category_id).first()
+        if category is None:
+            raise APIError(404, "NOT_FOUND", "찾는 방이 없어요.")
+        return category
+
+    def patch(self, request, address, category_id):
+        category = self.target(request, address, category_id)
+        serializer = CategoryCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        category.name = serializer.validated_data["name"]
+        try:
+            with transaction.atomic():
+                category.save(update_fields=["name", "updated_at"])
+        except IntegrityError:
+            raise APIError(409, "CONFLICT", "이미 있는 방 이름이에요.", fields={"name": "이미 있는 방 이름이에요."})
+        return Response({"id": category.pk, "name": category.name})
+
+    def delete(self, request, address, category_id):
+        category = self.target(request, address, category_id)
+        with transaction.atomic():
+            moved = Post.objects.filter(category=category).update(category=None)
+            category.delete()
+        return Response({"moved_to_uncategorized": moved})
+
+
+class CategoryOrderView(APIView):
+    """PUT /api/blogs/{address}/categories/order — 방 순서 바꾸기 (CAT-04). 그 한채의 방 id 를 빠짐없이."""
+
+    def put(self, request, address):
+        blog = owned_blog(address, request.user)
+        ids = request.data.get("ids") if isinstance(request.data, dict) else None
+        current = list(Category.objects.filter(blog=blog, parent__isnull=True).values_list("pk", flat=True))
+        if (
+            not isinstance(ids, list)
+            or not all(isinstance(i, int) and not isinstance(i, bool) for i in ids)
+            or len(ids) != len(set(ids))
+            or set(ids) != set(current)
+        ):
+            raise APIError(400, "VALIDATION_ERROR", "방 순서를 다시 보내 주세요.", fields={"ids": "이 한채의 방을 빠짐없이 한 번씩 보내 주세요."})
+        with transaction.atomic():
+            for position, pk in enumerate(ids):
+                Category.objects.filter(pk=pk).update(sort_order=position)
+        return Response({"ids": ids})
+
+
 class TagsView(APIView):
     """GET /api/blogs/{address}/tags — 이 한채의 태그, 많이 쓴 순 (TAG-03)."""
 
@@ -279,3 +330,62 @@ class TopicPostsView(APIView):
             raise APIError(404, "NOT_FOUND", "없는 골목이에요.")
         qs = with_counts(public_feed(request.user).filter(topic=topic))
         return Response(cursor_page(qs, request, lambda p: post_summary(p, request)))
+
+
+# ----- 마을에서 찾기 (API 명세서 4.8) -----
+def search_query(request):
+    q = (request.query_params.get("q") or "").strip()
+    if not q:
+        raise APIError(400, "VALIDATION_ERROR", "찾을 낱말을 써 주세요.", fields={"q": "찾을 낱말을 써 주세요."})
+    if len(q) > 50:
+        raise APIError(400, "VALIDATION_ERROR", "찾을 낱말은 50자까지 쓸 수 있어요.", fields={"q": "50자까지 쓸 수 있어요."})
+    return q
+
+
+class SearchPostsView(APIView):
+    """GET /api/search/posts?q=&sort=relevance|latest&page= — 마을 전체의 공개 기록 찾기 (SRCH-02).
+
+    정확도는 제목(3) · 태그(2) · 본문(1)에 낱말이 있는지 더한 점수, 같으면 최신순.
+    """
+
+    def get(self, request):
+        q = search_query(request)
+        sort = request.query_params.get("sort") or "relevance"
+        if sort not in ("relevance", "latest"):
+            raise APIError(400, "VALIDATION_ERROR", "정렬을 다시 골라 주세요.", fields={"sort": "relevance 또는 latest"})
+        tag_hit = Exists(PostTag.objects.filter(post=OuterRef("pk"), tag__name__icontains=q))
+        qs = (
+            public_feed(request.user)
+            .annotate(tag_hit=tag_hit)
+            .filter(Q(title__icontains=q) | Q(content_text__icontains=q) | Q(tag_hit=True))
+        )
+        if sort == "latest":
+            qs = qs.order_by("-published_at", "-id")
+        else:
+            score = (
+                Case(When(title__icontains=q, then=Value(3)), default=Value(0), output_field=IntegerField())
+                + Case(When(tag_hit=True, then=Value(2)), default=Value(0), output_field=IntegerField())
+                + Case(When(content_text__icontains=q, then=Value(1)), default=Value(0), output_field=IntegerField())
+            )
+            qs = qs.annotate(score=score).order_by("-score", "-published_at", "-id")
+        return Response(paginate(with_counts(qs), request, lambda p: post_summary(p, request)))
+
+
+class SearchBlogsView(APIView):
+    """GET /api/search/blogs?q=&page= — 한채 찾기 (이름 · 소개). 이름에 있으면 먼저, 같으면 이웃 많은 순 (SRCH-02)."""
+
+    def get(self, request):
+        from apps.blogs.serializers import blog_summary
+
+        q = search_query(request)
+        qs = (
+            visible_blogs()
+            .filter(Q(name__icontains=q) | Q(description__icontains=q))
+            .select_related("owner")
+            .annotate(
+                name_hit=Case(When(name__icontains=q, then=Value(1)), default=Value(0), output_field=IntegerField()),
+                subs=Count("subscriptions", distinct=True),
+            )
+            .order_by("-name_hit", "-subs", "-id")
+        )
+        return Response(paginate(qs, request, lambda b: blog_summary(b, request)))

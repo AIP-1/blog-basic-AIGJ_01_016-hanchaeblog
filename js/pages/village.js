@@ -144,11 +144,41 @@ async function loadFresh() {
   }
 }
 
-// ----- 사이드바: 순위 · 북적이는 한채 -----
-// 순위 API(GET /api/rankings/*)는 매 정각 계산하는 작업과 함께 만든다
-function renderRankingsPending() {
-  document.getElementById('rank-list').innerHTML = '<li class="empty">순위는 매 정각에 계산해요. 아직 준비 중이에요.</li>';
-  document.getElementById('house-list').innerHTML = '<p class="empty">북적이는 한채는 아직 준비 중이에요.</p>';
+// ----- 사이드바: 순위 · 북적이는 한채 (매 정각 기준) -----
+// "14시 기준 · 최근 1시간" (기능명세서 9.2). 조회가 없으면 기준을 비운다
+function basisLabel(ranking) {
+  if (ranking.basis === 'EMPTY') return '';
+  const hour = new Date(ranking.window_end).getHours();
+  return `${hour}시 기준 · 최근 ${ranking.basis === '1H' ? '1시간' : '24시간'}`;
+}
+
+async function renderRankings() {
+  const [posts, blogs] = await Promise.all([Store.postRanking(10), Store.blogRanking(4)]);
+  document.getElementById('rank-basis').textContent = basisLabel(posts);
+  document.getElementById('rank-list').innerHTML = posts.items.length
+    ? posts.items.map((r) => `
+      <li>
+        <a href="${Links.post(r.post.blog.address, r.post.no)}">
+          <span class="rank-no">${r.position}</span>
+          <span class="rank-text">
+            <span class="rank-title">${escapeHTML(r.post.title)}</span>
+            <span class="rank-blog">${escapeHTML(r.post.blog.name)}</span>
+          </span>
+        </a>
+      </li>`).join('')
+    : '<li class="empty">아직 읽힌 기록이 없어요. 매 정각에 다시 세요.</li>';
+
+  document.getElementById('house-basis').textContent = basisLabel(blogs);
+  document.getElementById('house-list').innerHTML = blogs.items.length
+    ? blogs.items.map((r) => `
+      <a class="house-row" href="${Links.yard(r.blog.address)}">
+        <span class="hyeonpan">${escapeHTML(r.blog.name)}</span>
+        <span class="house-text">
+          <span class="house-meta">${escapeHTML(r.blog.owner.nickname || '떠난 사람')} · 이웃 ${r.blog.subscriber_count}</span>
+          ${r.top_post ? `<span class="house-top">${escapeHTML(r.top_post.title)}</span>` : ''}
+        </span>
+      </a>`).join('')
+    : '<p class="empty">아직 북적이는 한채가 없어요. 매 정각에 다시 세요.</p>';
 }
 
 async function main() {
@@ -168,8 +198,10 @@ async function main() {
     loadTopics(),
     user ? renderNeighborPosts() : null,
     loadFresh(),
+    renderRankings().catch(() => {
+      document.getElementById('rank-list').innerHTML = '<li class="empty">순위를 불러오지 못했어요.</li>';
+    }),
   ]);
-  renderRankingsPending();
 }
 
 runPage(main);

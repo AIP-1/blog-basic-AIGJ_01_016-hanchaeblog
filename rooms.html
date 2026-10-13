@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>한채 · 방 관리</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gugi&family=Noto+Serif+KR:wght@400;600;700&display=swap">
+  <link rel="stylesheet" href="css/reset.css">
+  <link rel="stylesheet" href="css/hanchae.css">
+  <link rel="stylesheet" href="css/pages/rooms.css">
+</head>
+<body>
+  <header class="hc-header">
+    <div class="hc-header-inner">
+      <a class="hc-logo" href="/">한채</a>
+      <form class="hc-search" id="village-search" role="search">
+        <label for="village-q" class="sr-only">마을에서 찾기</label>
+        <input id="village-q" name="q" type="search" placeholder="마을에서 기록과 한채 찾기">
+        <button type="submit" aria-label="찾기">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+        </button>
+      </form>
+      <a class="hc-release" href="/releases">릴리즈</a>
+      <nav class="hc-nav" id="header-nav" aria-label="내 메뉴"></nav>
+    </div>
+  </header>
+  <section class="gate" id="gate" aria-label="대문" hidden></section>
+
+  <div class="house" id="house" hidden>
+    <nav class="breadcrumb" id="breadcrumb" aria-label="현재 위치"></nav>
+    <nav class="tabs" id="tabs" aria-label="한채 관리 메뉴"></nav>
+
+    <div class="house-cols">
+      <main class="house-main">
+        <div class="form-card card">
+          <div class="form-card-head">
+            <h1>방 관리</h1>
+            <p>기록을 나눠 두는 방이에요. 마당의 방 안내에 이 순서대로 보여요.</p>
+          </div>
+
+          <form class="room-add" id="room-add" novalidate>
+            <label for="room-name" class="sr-only">새 방 이름</label>
+            <input id="room-name" class="input" type="text" maxlength="20" placeholder="새 방 이름 (1~20자)" autocomplete="off">
+            <button type="submit" class="btn btn-primary">방 만들기</button>
+            <p class="form-error-line" id="room-add-error" role="alert"></p>
+          </form>
+
+          <ol class="room-list" id="room-list" aria-live="polite"></ol>
+        </div>
+      </main>
+
+      <aside class="house-side" aria-labelledby="preview-title">
+        <div class="preview-head">
+          <h2 id="preview-title">마당의 방 안내</h2>
+          <span>이렇게 보여요</span>
+        </div>
+        <div class="card room-preview">
+          <div class="giwa giwa-thin" aria-hidden="true"></div>
+          <div class="dancheong-band" aria-hidden="true"></div>
+          <ul id="room-preview"></ul>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="hc-footer">
+    <div class="dancheong-band" aria-hidden="true"></div>
+    <div class="hc-footer-inner">
+      <span class="hc-footer-logo">한채</span>
+      <span class="hc-footer-sub">한 사람, 한 채, 그 안의 기록</span>
+    </div>
+  </footer>
+
+  <script src="js/content.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/pages/rooms.js"></script>
+</body>
+</html>

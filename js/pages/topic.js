@@ -7,21 +7,6 @@ const STEP = 10;
 let cursor = null;
 let topic = null;
 
-function rowHTML(p) {
-  return `
-    <a class="post-row" href="${Links.post(p.blog.address, p.no)}">
-      <div class="post-row-text">
-        <span class="post-row-title">${escapeHTML(p.title)}</span>
-        <span class="post-row-excerpt">${escapeHTML(p.excerpt)}</span>
-        <span class="post-row-meta with-house">
-          <span class="hyeonpan hyeonpan-sm">${escapeHTML(p.blog.name)}</span>
-          ${escapeHTML(roomName(p.category))} · ${timeAgo(p.published_at)} · 공감 ${p.like_count}
-        </span>
-      </div>
-      ${thumbHTML(p.thumbnail_url, 'thumb-img topic-thumb')}
-    </a>`;
-}
-
 async function loadMore() {
   const box = document.getElementById('topic-posts');
   const { items, next_cursor: next } = await Store.topicPosts(slug, { cursor, limit: STEP });
@@ -35,10 +20,10 @@ async function loadMore() {
       </div>`;
     return;
   }
-  box.insertAdjacentHTML('beforeend', items.map(rowHTML).join(''));
+  box.insertAdjacentHTML('beforeend', items.map((p) => villagePostRowHTML(p)).join(''));
   cursor = next;
   if (next) {
-    box.insertAdjacentHTML('beforeend', '<button type="button" class="btn btn-secondary topic-more" id="topic-more">더 불러오기</button>');
+    box.insertAdjacentHTML('beforeend', '<button type="button" class="btn btn-secondary list-more" id="topic-more">더 불러오기</button>');
     document.getElementById('topic-more').addEventListener('click', loadMore);
   }
 }

@@ -28,10 +28,7 @@ function renderGate(blog) {
   actions.innerHTML = blog.is_owner
     ? `<a class="btn btn-secondary" href="${Links.yard(blog.address)}">내 마당</a>`
     : '<button type="button" class="btn" id="neighbor-button"></button>';
-  actions.insertAdjacentHTML('beforeend', '<button type="button" class="btn btn-secondary" id="guestbook-button">방명록</button>');
-  document.getElementById('guestbook-button').addEventListener('click', () => {
-    alert('방명록은 아직 준비 중이에요.');
-  });
+  actions.insertAdjacentHTML('beforeend', `<a class="btn btn-secondary" href="${Links.guestbook(blog.address)}">방명록</a>`);
   if (!blog.is_owner) bindNeighborButton(document.getElementById('neighbor-button'), blog, paintMeta);
 }
 

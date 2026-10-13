@@ -105,3 +105,50 @@ class SubscriptionTests(CommunityApiTestBase):
         self.assertEqual([p["no"] for p in feed["items"]], [1])  # 나만 보기는 빠진다
         self.assertEqual(self.reader_client.delete(self.url).json(), {"subscribed": False, "subscriber_count": 0})
         self.assertEqual(self.guest.get("/api/me/feed").status_code, 401)
+
+
+class GuestbookTests(CommunityApiTestBase):
+    url = "/api/blogs/minju/guestbook"
+
+    def test_write_list_and_page(self):
+        self.assertEqual(self.guest.post(self.url, {"content": "안녕"}, format="json").status_code, 401)
+        Blog.objects.create(owner=self.reader, address="seohyun", name="서현의 한채")
+        res = self.reader_client.post(self.url, {"content": "  다녀가요  "}, format="json")
+        self.assertEqual(res.status_code, 201)
+        self.assertEqual(res.json()["content"], "다녀가요")
+        self.assertEqual(res.json()["author_blog"], {"address": "seohyun", "name": "서현의 한채"})
+        self.third_client.post(self.url, {"content": "두 번째"}, format="json")
+        listed = self.guest.get(self.url).json()
+        self.assertEqual((listed["total"], listed["items"][0]["content"]), (2, "두 번째"))  # 최신순
+        self.assertIsNone(listed["items"][0]["author_blog"])
+        self.assertEqual(self.reader_client.post(self.url, {"content": " "}, format="json").status_code, 400)
+
+    def test_client_token_dedupe(self):
+        token = "bbbbbbbb-0d7a-4c55-9a77-1f2e3d4c5b6a"
+        first = self.reader_client.post(self.url, {"content": "한 번", "client_token": token}, format="json")
+        again = self.reader_client.post(self.url, {"content": "한 번", "client_token": token}, format="json")
+        self.assertEqual((first.status_code, again.status_code), (201, 200))
+
+    def test_edit_only_author_delete_author_or_owner(self):
+        eid = self.reader_client.post(self.url, {"content": "처음"}, format="json").json()["id"]
+        self.assertEqual(self.owner_client.patch(f"/api/guestbook/{eid}", {"content": "주인"}, format="json").status_code, 403)
+        res = self.reader_client.patch(f"/api/guestbook/{eid}", {"content": "고침"}, format="json")
+        self.assertEqual(res.status_code, 200)
+        self.assertIsNotNone(res.json()["edited_at"])
+        self.assertEqual(self.third_client.delete(f"/api/guestbook/{eid}").status_code, 403)
+        self.assertEqual(self.owner_client.delete(f"/api/guestbook/{eid}").status_code, 204)
+        self.assertEqual(self.owner_client.delete(f"/api/guestbook/{eid}").status_code, 404)
+
+
+class MySubscriptionsTests(CommunityApiTestBase):
+    def test_list_my_neighbors(self):
+        self.assertEqual(self.guest.get("/api/me/subscriptions").status_code, 401)
+        jiwon = Blog.objects.create(owner=self.third, address="jiwon", name="지원의 한채")
+        self.reader_client.put("/api/blogs/minju/subscription")
+        self.reader_client.put("/api/blogs/jiwon/subscription")
+        res = self.reader_client.get("/api/me/subscriptions").json()
+        self.assertEqual([b["address"] for b in res["items"]], ["jiwon", "minju"])  # 최근 맺은 순
+        self.assertEqual(res["items"][1]["post_count"], 1)  # 나만 보기는 세지 않는다
+        jiwon.deleted_at = timezone.now()
+        jiwon.save()
+        self.assertEqual(self.reader_client.get("/api/me/subscriptions").json()["total"], 1)
