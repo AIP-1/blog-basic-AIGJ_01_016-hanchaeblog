@@ -1,6 +1,7 @@
 """코드 검토에서 나온 문제들 (사진 주소 · 큰 사진 · 화면 파일 경로 · 열려 있던 allauth 화면)."""
 
 import io
+import json
 import shutil
 import tempfile
 
@@ -83,3 +84,31 @@ class AllauthPagesClosedTests(TestCase):
     def test_allauth_pages_are_closed_until_social_login(self):
         for url in ("/accounts/login/", "/accounts/signup/", "/accounts/kakao/login/"):
             self.assertEqual(self.client.get(url).status_code, 404, url)
+
+
+class ErrorPageTests(TestCase):
+    """없는 주소 · 서버 오류도 닫힌 대문 화면으로 (SCR-20)."""
+
+    def test_unknown_pages_get_404_page_with_status(self):
+        for url in ("/nope", "/css/nope.css", "/yard/deep/path", "/css/../backend/.env"):
+            res = self.client.get(url)
+            self.assertEqual(res.status_code, 404, url)
+            self.assertIn("찾는 집이 없어요", res.content.decode(), url)
+
+    def test_api_404_stays_json(self):
+        from config.frontend import not_found
+        from django.test import RequestFactory
+
+        res = not_found(RequestFactory().get("/api/nope"))
+        self.assertEqual((res.status_code, res["Content-Type"]), (404, "application/json"))
+        self.assertEqual(json.loads(res.content)["error"]["code"], "NOT_FOUND")
+
+    def test_server_error_pages(self):
+        from config.frontend import server_error
+        from django.test import RequestFactory
+
+        page = server_error(RequestFactory().get("/yard"))
+        self.assertEqual(page.status_code, 500)
+        self.assertIn("대문이 잠시 고장 났어요", page.content.decode())
+        api = server_error(RequestFactory().get("/api/blogs/x"))
+        self.assertEqual(json.loads(api.content)["error"]["code"], "SERVER_ERROR")

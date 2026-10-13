@@ -51,7 +51,6 @@ function renderPreview() {
   document.getElementById('preview-name').textContent = nameInput.value.trim() || '한채 이름';
   document.getElementById('preview-nickname').textContent = nickname;
   document.getElementById('preview-intro').textContent = introInput.value.trim() || '주인 소개가 여기에 보여요';
-  document.getElementById('preview-address').textContent = `${addressInput.value || '주소'}.한채도메인`;
   document.getElementById('intro-count').textContent = `${introInput.value.length} / 200`;
 }
 

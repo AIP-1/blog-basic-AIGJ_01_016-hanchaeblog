@@ -181,6 +181,67 @@ function bindNeighborButton(button, blog, onCount) {
   });
 }
 
+// ----- 닫힌 대문: 오류 화면 (SCR-20) -----
+// 대문 그림과 '마을로 돌아가기'는 같고, 현판 · 제목 · 설명 · 두 번째 버튼만 경우마다 바뀐다
+const LOST_CASES = {
+  notFound: { code: '404', eyebrow: '없는 주소', title: '찾는 집이 없어요', text: '주소가 바뀌었거나 허물어진 한채, 지워진 기록이에요. 마을에서 다시 찾아 보세요.', action: 'back' },
+  forbidden: { code: '403', eyebrow: '들어갈 수 없는 곳', title: '문이 닫혀 있어요', text: '주인만 들어갈 수 있는 곳이에요. 내 한채라면 로그인한 뒤 다시 열어 주세요.', action: 'login' },
+  serverError: { code: '500', eyebrow: '잠시 문제가 생겼어요', title: '대문이 잠시 고장 났어요', text: '서버에 문제가 생겨 화면을 열지 못했어요. 잠시 뒤 다시 들어와 주세요.', action: 'reload' },
+  loadFailed: { code: '!', eyebrow: '연결이 끊겼어요', title: '화면을 불러오지 못했어요', text: '인터넷 연결이 끊겼거나 서버가 잠시 답하지 않아요. 연결을 확인하고 다시 불러와 주세요.', action: 'reload' },
+};
+
+function lostHTML(kind, { text } = {}) {
+  const c = LOST_CASES[kind] || LOST_CASES.notFound;
+  const second = {
+    back: '<button type="button" class="btn btn-secondary" data-lost="back">이전 화면으로</button>',
+    login: `<a class="btn btn-secondary" href="${Links.login(Links.here())}">로그인</a>`,
+    reload: '<button type="button" class="btn btn-secondary" data-lost="reload">다시 불러오기</button>',
+  }[c.action];
+  return `
+    <div class="lost-gate" aria-hidden="true">
+      <div class="lost-roof"><i class="lost-roof-peak"></i><i class="lost-roof-eaves"></i><i class="lost-roof-tip lost-roof-tip-l"></i><i class="lost-roof-tip lost-roof-tip-r"></i></div>
+      <div class="dancheong-band"></div>
+      <div class="lost-frame">
+        <span class="hyeonpan lost-code">${c.code}</span>
+        <div class="lost-doors"><span><i class="lost-ring"></i></span><span><i class="lost-ring"></i></span></div>
+      </div>
+      <div class="lost-step"></div>
+    </div>
+    <div class="lost-text">
+      <span class="lost-eyebrow">${c.eyebrow}</span>
+      <h1>${c.title}</h1>
+      <p>${escapeHTML(text || c.text)}</p>
+      <div class="lost-actions">
+        <a class="btn btn-primary" href="/">마을로 돌아가기</a>
+        ${second}
+      </div>
+    </div>`;
+}
+
+// 닫힌 대문의 버튼: 이전 화면 · 다시 불러오기
+document.addEventListener('click', (e) => {
+  const button = e.target.closest('[data-lost]');
+  if (!button) return;
+  if (button.dataset.lost === 'reload') location.reload();
+  // 다른 사이트에서 바로 들어왔으면 이전 화면이 없으니 마을로
+  if (button.dataset.lost === 'back') {
+    if (document.referrer.startsWith(location.origin) && history.length > 1) history.back();
+    else location.href = '/';
+  }
+});
+
+// 본문을 숨기고 그 자리에 닫힌 대문을 보여 준다
+function showLost(kind, options) {
+  document.querySelectorAll('body > main, body > .house, body > .village, body > .gate, body > form').forEach((el) => {
+    el.hidden = true;
+  });
+  const lost = document.createElement('main');
+  lost.className = 'lost';
+  lost.innerHTML = lostHTML(kind, options);
+  document.body.insertBefore(lost, document.querySelector('body > footer'));
+  document.title = `${(LOST_CASES[kind] || LOST_CASES.notFound).title} · 한채`;
+}
+
 // 다른 화면으로 넘어가는 중에 끊긴 요청은 오류가 아니다
 let leavingPage = false;
 window.addEventListener('beforeunload', () => { leavingPage = true; });
@@ -191,19 +252,9 @@ function runPage(main) {
   main().catch((err) => {
     if (leavingPage) return;
     console.error(err);
-    const notice = document.createElement('main');
-    notice.className = 'notice card';
-    notice.innerHTML = `
-      <h1>화면을 불러오지 못했어요</h1>
-      <p>${escapeHTML(err.firstMessage || err.message || '잠시 뒤 다시 시도해 주세요.')}</p>
-      <button type="button" class="btn btn-primary">다시 불러오기</button>`;
-    notice.querySelector('button').addEventListener('click', () => location.reload());
-    // 반쯤 그려진 본문은 숨기고 안내를 그 자리에
-    document.querySelectorAll('body > main, body > .house, body > .village, body > .gate, body > form').forEach((el) => {
-      el.hidden = true;
-    });
-    const footer = document.querySelector('body > footer');
-    document.body.insertBefore(notice, footer);
+    // 서버가 오류로 답했으면 '고장', 답이 없었으면 '연결 끊김'
+    const kind = err.status === 404 ? 'notFound' : err.status === 403 ? 'forbidden' : err.status >= 500 ? 'serverError' : 'loadFailed';
+    showLost(kind);
   });
 }
 

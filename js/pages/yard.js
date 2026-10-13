@@ -48,7 +48,6 @@ function renderGate(blog, total) {
   document.getElementById('owner-name').textContent = blog.owner.nickname || '떠난 사람';
   document.getElementById('owner-intro').textContent = blog.description || '';
   document.getElementById('stats').innerHTML = `이웃 <strong id="neighbor-count">${blog.subscriber_count}</strong> · 기록 <strong>${total}</strong>`;
-  document.getElementById('footer-address').textContent = `${blog.address}.한채도메인`;
 
   const actions = document.getElementById('gate-actions');
   actions.innerHTML = blog.is_owner
@@ -125,7 +124,7 @@ async function main() {
 
   const blog = await Store.getBlog(address);
   if (!blog) {
-    document.getElementById('not-found').hidden = false;
+    showLost('notFound');
     return;
   }
 
