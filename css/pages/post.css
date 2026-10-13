@@ -1,8 +1,4 @@
 /* ===== 기록 (SCR-09) ===== */
-.post-gate-meta {
-  font-size: 14px;
-  color: var(--meok-sub);
-}
 
 /* 족자: 제목 위아래에 축 */
 .scroll {
@@ -137,7 +133,8 @@
 }
 
 .post-delete {
-  color: var(--meok-sub);
+  color: var(--danger);
+  font-weight: 500;
 }
 
 /* 이전 · 다음 기록 */
@@ -362,7 +359,7 @@ a.comment-name:hover {
 .comment-delete {
   margin-left: auto;
   font-size: 13px;
-  color: var(--meok-sub);
+  color: var(--danger);
   text-decoration: underline;
   text-underline-offset: 3px;
 }

@@ -6,7 +6,8 @@ from .models import User
 
 
 def absolute_url(request, field_file):
-    return request.build_absolute_uri(field_file.url) if field_file else None
+    """올린 파일의 주소. 호스트 없이 /media/... 로 준다 (도메인 · https 가 바뀌어도 깨지지 않게)."""
+    return field_file.url if field_file else None
 
 
 def alive_blog_address(user):

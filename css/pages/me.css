@@ -1,0 +1,94 @@
+/* ===== 내 정보 (SCR-11) ===== */
+.email-box {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--hanji);
+}
+
+.email-box > span:first-child {
+  flex: 1 1 200px;
+  font-size: 16px;
+  color: var(--meok-sub);
+  overflow-wrap: anywhere;
+}
+
+.verified-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border: 1px solid var(--dancheong-ink);
+  border-radius: 2px;
+  color: var(--dancheong-ink);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.account-box {
+  padding: 20px 24px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+}
+
+.account-box > div {
+  flex: 1 1 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.account-box h2 {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.account-box span {
+  font-size: 14px;
+  color: var(--meok-sub);
+}
+
+/* 오른쪽: 내 한채 */
+.my-house {
+  overflow: hidden;
+}
+
+.my-house-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.my-house-body h2 {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.my-house-body .meta {
+  font-size: 14px;
+  color: var(--meok-sub);
+}
+
+.my-house-actions {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.my-house-actions .btn {
+  font-size: 14px;
+}
+
+.my-house-actions .btn:only-child {
+  grid-column: 1 / -1;
+}

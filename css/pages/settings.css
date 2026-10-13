@@ -1,0 +1,94 @@
+/* ===== 한채 관리 (SCR-18) ===== */
+.optional {
+  font-weight: 400;
+  color: var(--meok-sub);
+}
+
+/* 주인 사진은 내 정보에서 바꾼다는 안내 */
+.owner-photo-note {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  background: var(--hanji);
+}
+
+.owner-photo-note .avatar {
+  width: 48px;
+  height: 48px;
+  border: 2px solid var(--seal);
+}
+
+.owner-photo-note > div {
+  flex: 1 1 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.owner-photo-note .text-link {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* 대문 미리보기 */
+.settings-side {
+  flex: 1 1 340px;
+  gap: 12px;
+}
+
+.preview-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.preview-head h2 {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.preview-head span {
+  font-size: 13px;
+  color: var(--meok-sub);
+}
+
+.preview-gate {
+  overflow: hidden;
+}
+
+.preview-giwa {
+  height: 20px;
+}
+
+.preview-body {
+  padding: 12px 24px 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+}
+
+.preview-name {
+  max-width: 100%;
+  font-size: 28px;
+  overflow-wrap: anywhere;
+}
+
+.preview-owner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--meok-sub);
+  text-align: left;
+}
+
+.preview-owner .avatar {
+  width: 40px;
+  height: 40px;
+  border: 2px solid var(--seal);
+}

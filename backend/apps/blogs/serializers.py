@@ -41,7 +41,8 @@ def blog_summary(blog, request):
         "address": blog.address,
         "name": blog.name,
         "description": blog.description,
-        "profile_image_url": absolute_url(request, blog.profile_image),
+        # 사진은 하나: 대문에는 주인의 프로필 사진(내 정보)을 건다
+        "profile_image_url": absolute_url(request, blog.owner.profile_image) if blog.owner.is_active else None,
         "owner": user_summary(blog.owner, request),
         "subscriber_count": blog.subscriptions.count(),
     }
